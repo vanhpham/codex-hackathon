@@ -2,6 +2,24 @@
 
 This document breaks the system into small build phases. The goal is to keep the project demoable at every stage.
 
+## Five-Sprint Delivery Map
+
+The detailed phases below can be grouped into five hackathon-friendly sprints:
+
+```text
+Sprint 1: Product contract + schema gate
+Sprint 2: Local simulator + metric scoring
+Sprint 3: OpenAI structured harness
+Sprint 4: MQTT edge loop + canary/rollback
+Sprint 5: Dashboard + trace/eval polish
+```
+
+Sprint 1 is tracked in:
+
+```text
+docs/sprint-1-product-contract.md
+```
+
 ## Phase 0: Product Decision
 
 Decide the core promise:
