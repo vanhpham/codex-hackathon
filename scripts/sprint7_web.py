@@ -8,7 +8,7 @@ import sys
 import threading
 import time
 import urllib.parse
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
@@ -74,88 +74,270 @@ INDEX_HTML = """<!doctype html>
   <title>SwarmForge Sprint 7 - Visualization Lab</title>
   <style>
     :root {
-      --bg: #f5f7fb;
-      --card: #fff;
-      --line: #d4d8de;
-      --text: #1c2025;
-      --muted: #666;
-      --good: #0a7a37;
-      --bad: #ab0c0c;
-      --warn: #a36b00;
+      --bg-0: #060b1a;
+      --bg-1: #101831;
+      --bg-2: #19213a;
+      --panel: rgba(19, 31, 56, 0.85);
+      --panel-soft: rgba(255, 255, 255, 0.05);
+      --line: rgba(152, 170, 255, 0.25);
+      --text: #e6edff;
+      --muted: #9fb0d2;
+      --good: #4dd7a7;
+      --bad: #ff6d6d;
+      --warn: #ffca65;
+      --accent: #80a2ff;
     }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     body {
       font-family: Inter, system-ui, sans-serif;
-      margin: 16px;
-      background: var(--bg);
+      margin: 0;
+      padding: 18px;
+      min-height: 100vh;
+      background:
+        radial-gradient(90rem 50rem at 5% -10%, #1a2751 0%, transparent 70%),
+        radial-gradient(80rem 40rem at 90% 5%, #202f5d 0%, transparent 65%),
+        linear-gradient(120deg, var(--bg-0), var(--bg-1), var(--bg-2));
       color: var(--text);
+      letter-spacing: 0;
     }
+
     h1, h2, h3 {
-      margin: 0 0 8px;
+      margin: 0;
+      line-height: 1.2;
     }
+
     .page {
-      max-width: 1500px;
+      max-width: 1600px;
       margin: 0 auto;
       display: grid;
-      gap: 12px;
+      gap: 14px;
     }
+
     .row {
       display: grid;
       gap: 12px;
       grid-template-columns: repeat(12, 1fr);
     }
+
     .panel {
-      background: var(--card);
+      background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 12px;
+      border-radius: 12px;
+      padding: 14px;
       overflow: hidden;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 8px 30px rgba(3, 5, 20, 0.45), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+      position: relative;
     }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(140deg, rgba(255, 255, 255, 0.08), transparent 20%, transparent 72%, rgba(128, 162, 255, 0.12));
+      mix-blend-mode: screen;
+      opacity: 0.05;
+    }
+
+    .panel > * {
+      position: relative;
+      z-index: 1;
+    }
+
     .col-12 { grid-column: span 12; }
     .col-8 { grid-column: span 8; }
     .col-4 { grid-column: span 4; }
     .col-6 { grid-column: span 6; }
+
+    .hero {
+      padding: 16px;
+      animation: glowShift 4s ease-in-out infinite alternate;
+      background:
+        linear-gradient(140deg, rgba(128, 162, 255, 0.18), rgba(19, 31, 56, 0.75)),
+        var(--panel-soft);
+      border-color: rgba(158, 179, 255, 0.45);
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .hero h1 {
+      color: #f4f7ff;
+      letter-spacing: 0.01rem;
+    }
+
+    .hero p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .hero .meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
     .summary {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 12px;
-      margin-bottom: 12px;
     }
+
     .summary-card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 10px;
-      background: #fff;
+      border: 1px solid rgba(128, 162, 255, 0.22);
+      border-radius: 12px;
+      padding: 10px 12px;
+      background: var(--panel-soft);
+      min-height: 92px;
     }
+
     .summary-card .label {
       font-size: 0.86rem;
       color: var(--muted);
     }
+
     .summary-card .value {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       margin-top: 6px;
       font-weight: 600;
+      color: #fff;
     }
-    .muted { color: var(--muted); font-size: 0.9rem; }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
     .good { color: var(--good); }
     .bad { color: var(--bad); }
     .warn { color: var(--warn); }
+
+    .section-title {
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .module-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      align-items: center;
+    }
+
+    .module-title span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .flow-grid {
+      display: grid;
+      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      margin-top: 10px;
+    }
+
+    .flow-card {
+      background: rgba(9, 14, 31, 0.55);
+      border: 1px solid rgba(160, 183, 255, 0.16);
+      border-radius: 10px;
+      padding: 10px;
+      position: relative;
+      overflow: hidden;
+      min-height: 190px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .flow-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(160deg, rgba(255, 255, 255, 0.05), transparent 55%, transparent);
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .flow-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .flow-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      color: #8f9dc2;
+      text-transform: uppercase;
+      letter-spacing: 0.04rem;
+    }
+
+    .flow-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: rgba(128, 162, 255, 0.15);
+      border: 1px solid rgba(128, 162, 255, 0.5);
+      font-size: 0.75rem;
+      color: #dbe6ff;
+      font-weight: 600;
+    }
+
+    .flow-card-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .flow-card h4 {
+      font-size: 0.95rem;
+      color: #f1f5ff;
+      margin-bottom: 2px;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.93rem;
     }
+
     th, td {
       text-align: left;
       padding: 6px;
-      border-bottom: 1px solid #eceef2;
+      border-bottom: 1px solid rgba(170, 187, 235, 0.12);
       vertical-align: top;
     }
+
     th {
-      background: #f8fafc;
+      background: rgba(16, 32, 67, 0.9);
+      color: #dde6ff;
       font-weight: 600;
       position: sticky;
       top: 0;
     }
+
     .toolbar {
       display: flex;
       gap: 8px;
@@ -163,26 +345,157 @@ INDEX_HTML = """<!doctype html>
       align-items: center;
       margin-bottom: 8px;
     }
+
     input, button, textarea, select {
       font: inherit;
     }
+
     button {
-      padding: 6px 10px;
+      padding: 7px 12px;
+      border: 1px solid rgba(160, 184, 255, 0.45);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #2f477d, #2a3f71);
+      color: #f5f8ff;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
     }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.12);
+      box-shadow: 0 8px 16px rgba(27, 48, 105, 0.5);
+    }
+
+    button:active {
+      transform: translateY(0.5px);
+    }
+
     textarea {
       width: 100%;
       resize: vertical;
     }
+
     .log {
-      max-height: 260px;
+      min-height: 130px;
+      max-height: 280px;
       overflow: auto;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 0.82rem;
-      background: #0b1220;
-      color: #dce5f2;
+      background: rgba(3, 6, 24, 0.82);
+      color: #e7ebf6;
       padding: 8px;
-      border-radius: 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(168, 187, 255, 0.18);
+      box-shadow: inset 0 0 30px rgba(3, 6, 24, 0.7);
     }
+
+    .pipeline-log {
+      min-height: 148px;
+      max-height: 190px;
+    }
+
+    .pipeline-track {
+      display: grid;
+      gap: 8px;
+      max-height: 210px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .pipeline-empty,
+    .pipeline-step {
+      border-radius: 8px;
+      padding: 8px 10px;
+      border: 1px dashed rgba(154, 172, 219, 0.3);
+      background: rgba(8, 13, 32, 0.62);
+      min-height: 56px;
+    }
+
+    .pipeline-step {
+      border-left-width: 4px;
+      border-left-style: solid;
+    }
+
+    .pipeline-step.done {
+      border-left-color: var(--good);
+      box-shadow: inset 0 0 0 1px rgba(77, 215, 167, 0.2);
+    }
+
+    .pipeline-step.running {
+      border-left-color: var(--accent);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    .pipeline-step.failed {
+      border-left-color: var(--bad);
+      box-shadow: inset 0 0 0 1px rgba(255, 109, 109, 0.2);
+    }
+
+    .pipeline-step.skipped {
+      border-left-color: #7d8cb2;
+      opacity: 0.82;
+    }
+
+    .pipeline-step > .header {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #dfe7ff;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: baseline;
+    }
+
+    .pipeline-step .meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 4px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .pipeline-step .payload {
+      margin-top: 6px;
+      font-size: 0.73rem;
+      color: #bbd2ff;
+      background: rgba(5, 10, 31, 0.7);
+      border: 1px solid rgba(132, 156, 235, 0.2);
+      border-radius: 7px;
+      padding: 6px;
+      white-space: pre-wrap;
+      overflow: auto;
+      max-height: 52px;
+    }
+
+    .pipeline-status-badge {
+      text-transform: uppercase;
+      letter-spacing: 0.03rem;
+      font-size: 0.64rem;
+      padding: 3px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(160, 178, 223, 0.6);
+      color: #d7e3ff;
+      background: rgba(128, 162, 255, 0.08);
+    }
+
+    .pipeline-status-badge.done {
+      border-color: rgba(77, 215, 167, 0.65);
+      background: rgba(77, 215, 167, 0.16);
+      color: #e0ffef;
+    }
+
+    .pipeline-status-badge.running {
+      border-color: rgba(128, 162, 255, 0.8);
+      background: rgba(128, 162, 255, 0.16);
+      color: #e0edff;
+    }
+
+    .pipeline-status-badge.failed {
+      border-color: rgba(255, 109, 109, 0.75);
+      background: rgba(255, 109, 109, 0.15);
+      color: #ffd8d8;
+    }
+
     .spark {
       display: grid;
       grid-template-columns: repeat(20, 1fr);
@@ -190,6 +503,7 @@ INDEX_HTML = """<!doctype html>
       align-items: end;
       height: 60px;
     }
+
     .spark span {
       display: block;
       width: 100%;
@@ -198,119 +512,293 @@ INDEX_HTML = """<!doctype html>
       align-self: end;
       transition: height 0.15s;
     }
+
     .trace-list {
       max-height: 260px;
       overflow: auto;
     }
+
     .card-inline {
       display: grid;
       gap: 6px;
     }
+
     .decision {
       font-weight: 700;
       margin-bottom: 6px;
     }
+
     .pill {
       display: inline-block;
       border-radius: 999px;
       padding: 3px 8px;
       font-size: 0.8rem;
-      border: 1px solid #cbd2db;
-      background: #f7f9fc;
+      border: 1px solid rgba(154, 174, 214, 0.5);
+      background: var(--panel-soft);
       margin-right: 6px;
+      color: #d3deff;
     }
+
     .trace-item {
       padding: 6px;
-      border: 1px solid var(--line);
-      border-radius: 6px;
+      border: 1px solid rgba(146, 169, 230, 0.2);
+      border-radius: 8px;
       margin-bottom: 6px;
       cursor: pointer;
-      background: #fff;
+      background: rgba(8, 14, 35, 0.72);
+      transition: border-color 0.18s ease, transform 0.18s ease;
     }
+
     .trace-item:hover {
       border-color: #7ca2ff;
+      transform: translateX(2px);
     }
-    .active { border-color: #2f62ff; box-shadow: 0 0 0 1px #2f62ff33; }
-    .operator-grid {
-      display: grid;
-      grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
-      gap: 12px;
+
+    .active {
+      border-color: #2f62ff;
+      box-shadow: 0 0 0 1px #2f62ff33;
     }
+
     .operator-controls {
       display: grid;
       gap: 8px;
     }
+
     .operator-controls textarea {
       min-height: 116px;
     }
+
     .mini-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(90px, 1fr));
       gap: 8px;
       align-items: end;
     }
+
     .mini-grid label {
       display: grid;
       gap: 4px;
       font-size: 0.86rem;
       color: var(--muted);
     }
+
+    .state-chip {
+      border-radius: 999px;
+      padding: 4px 10px;
+      border: 1px solid rgba(162, 184, 234, 0.45);
+      color: #dce8ff;
+      background: rgba(90, 113, 176, 0.2);
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04rem;
+    }
+
+    .state-chip.ready {
+      background: rgba(77, 215, 167, 0.2);
+      border-color: rgba(77, 215, 167, 0.45);
+      color: #ddffee;
+      animation: none;
+    }
+
+    .state-chip.blocked {
+      background: rgba(255, 109, 109, 0.2);
+      border-color: rgba(255, 109, 109, 0.45);
+      color: #ffdede;
+      animation: none;
+    }
+
+    .state-chip.failed {
+      background: rgba(255, 202, 101, 0.2);
+      border-color: rgba(255, 202, 101, 0.45);
+      color: #ffebc8;
+      animation: none;
+    }
+
+    .state-chip.running {
+      animation: pulseBadge 1.5s ease-in-out infinite;
+    }
+
+    .state-idle {
+      animation: none;
+      opacity: 0.86;
+    }
+
+    .debug-two-col {
+      display: grid;
+      grid-template-columns: minmax(250px, 2fr) minmax(250px, 1fr);
+      gap: 12px;
+    }
+
+    .debug-one-col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+      margin-top: 0;
+    }
+
+    .state-note {
+      margin-top: 6px;
+      font-size: 0.84rem;
+      color: #b8c8ec;
+    }
+
+    .inline-input {
+      width: 100%;
+      background: rgba(5, 10, 30, 0.85);
+      color: #eff2ff;
+      border: 1px solid rgba(157, 181, 245, 0.2);
+      border-radius: 7px;
+      padding: 6px 8px;
+      font: inherit;
+      margin-top: 4px;
+    }
+
+    .inline-label {
+      display: block;
+      color: #9eb3dc;
+      margin-bottom: 4px;
+      font-size: 0.84rem;
+    }
+
+    .copy-btn {
+      border-color: rgba(170, 198, 255, 0.2);
+      background: rgba(58, 84, 148, 0.55);
+      font-size: 0.8rem;
+      padding: 4px 8px;
+    }
+
     @media (max-width: 960px) {
-      .operator-grid { grid-template-columns: 1fr; }
+      .debug-two-col { grid-template-columns: 1fr; }
       .mini-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+      .hero-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+
+    @keyframes glowShift {
+      from { box-shadow: 0 8px 30px rgba(2, 6, 20, 0.45); }
+      to { box-shadow: 0 8px 42px rgba(66, 93, 178, 0.45); }
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(128, 162, 255, 0.2); }
+      75% { box-shadow: 0 0 0 10px rgba(128, 162, 255, 0.0); }
+      100% { box-shadow: 0 0 0 0 rgba(128, 162, 255, 0.0); }
+    }
+
+    @keyframes pulseBadge {
+      0% { filter: saturate(1); }
+      50% { filter: saturate(1.2); }
+      100% { filter: saturate(1); }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <h1>SwarmForge Sprint 7 - Runtime Visualization</h1>
-    <p class="muted">Visualize verification-safe canary runtime, fleet telemetry, and trace evidence in one place.</p>
+    <section class="panel hero col-12">
+      <div class="hero-top">
+        <div>
+          <div class="section-title">
+            <h1>SwarmForge Sprint 7 Visualization</h1>
+            <span class="state-chip state-idle" id="operatorState">Idle</span>
+          </div>
+          <p>Prompt → OpenAI raw plan → typed parse → harness verification → decision.</p>
+        </div>
+        <div class="meta">
+          <span class="pill" id="brokerMode">broker: -</span>
+          <span class="pill" id="fleetConfigured">configured: 0</span>
+          <span class="pill" id="lastDispatch">last dispatch: -</span>
+        </div>
+      </div>
+    </section>
 
     <div class="summary" id="summaryCards"></div>
 
     <section class="panel col-12">
-      <h3>Operator Console</h3>
-      <div class="operator-grid">
-        <div class="operator-controls">
-          <textarea id="operatorPrompt">Xe dang vao vung bun lay, rung lac manh. Hay giam sample rate xuong 2Hz, them median filter cho gia toc, va chuyen log level sang WARNING.</textarea>
-          <div class="mini-grid">
-            <label>Planner
-              <select id="plannerMode">
-                <option value="openai" selected>OpenAI</option>
-                <option value="demo">Demo</option>
-              </select>
-            </label>
-            <label>Scenarios
-              <input id="operatorScenarioCount" type="number" min="5" max="500" value="50" />
-            </label>
-            <label>Workers
-              <input id="operatorWorkers" type="number" min="1" max="16" value="4" />
-            </label>
-            <label>Adaptive
-              <select id="operatorAdaptive">
-                <option value="true" selected>On</option>
-                <option value="false">Off</option>
-              </select>
-            </label>
+      <div class="module-title">
+        <h3>👤 User Flow</h3>
+        <span>Engineer first, then typed plan + verification, then runtime gate.</span>
+      </div>
+      <div class="flow-grid">
+        <div class="flow-card">
+          <div class="flow-card-title">
+            <div class="flow-label"><span class="flow-chip">1</span> Engineer prompt</div>
+            <span class="state-chip state-idle">Ready</span>
           </div>
-          <div class="toolbar">
-            <button onclick="runOperatorPlan()">Generate + Verify</button>
-            <button onclick="deployVerifiedPlan()">Deploy Verified Canary</button>
-            <span id="operatorState" class="muted">Idle</span>
+          <h4>Natural language requirement</h4>
+          <div class="operator-controls">
+            <textarea id="operatorPrompt">Xe dang vao vung bun lay, rung lac manh. Hay giam sample rate xuong 2Hz, them median filter cho gia toc, va chuyen log level sang WARNING.</textarea>
+            <div class="mini-grid">
+              <label>Planner
+                <select id="plannerMode">
+                  <option value="openai" selected>OpenAI</option>
+                  <option value="demo">Demo</option>
+                </select>
+              </label>
+              <label>Scenarios
+                <input id="operatorScenarioCount" type="number" min="5" max="500" value="50" />
+              </label>
+              <label>Workers
+                <input id="operatorWorkers" type="number" min="1" max="16" value="4" />
+              </label>
+              <label>Adaptive
+                <select id="operatorAdaptive">
+                  <option value="true" selected>On</option>
+                  <option value="false">Off</option>
+                </select>
+              </label>
+            </div>
+            <div class="toolbar">
+              <button onclick="runOperatorPlan()">Generate + Verify</button>
+              <button onclick="deployVerifiedPlan()">Deploy Verified Canary</button>
+            </div>
+            <div class="state-note">Current state: <strong id="operatorFlowSummary">No run yet.</strong></div>
           </div>
         </div>
-        <pre class="log" id="operatorResult">No operator run yet.</pre>
+
+        <div class="flow-card">
+          <div class="flow-card-title">
+            <div class="flow-label"><span class="flow-chip">2</span> OpenAI raw output</div>
+            <button class="copy-btn" onclick="copyRawPlanJson()">Copy</button>
+          </div>
+          <pre class="log pipeline-log" id="operatorRawPlan">No raw plan yet.</pre>
+          <div class="state-note">Raw text is shown before typed parsing and validation.</div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-title">
+            <div class="flow-label"><span class="flow-chip">3</span> Parsed plan</div>
+            <button class="copy-btn" onclick="copyParsedPlanJson()">Copy</button>
+          </div>
+          <pre class="log pipeline-log" id="operatorParsedPlan">No parsed params yet.</pre>
+          <div class="state-note">Parsed and normalized to trusted schema format.</div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-card-title">
+            <div class="flow-label"><span class="flow-chip">4</span> Harness pipeline</div>
+            <span class="state-chip state-idle" id="pipelineState">waiting</span>
+          </div>
+          <div id="operatorPipeline" class="pipeline-track">No pipeline yet.</div>
+          <div class="flow-label" style="margin-top: 6px;">Verification artifact</div>
+          <pre class="log pipeline-log" id="operatorResult">No operator run yet.</pre>
+        </div>
       </div>
     </section>
 
-    <div class="row">
-      <section class="panel col-8">
+    <section class="panel col-12">
+      <div class="module-title">
+        <h3>🐞 Debug Flow</h3>
+        <span>Dispatch + telemetry + traces + replay in one place.</span>
+      </div>
+    </section>
+
+    <div class="debug-two-col">
+      <section class="panel">
         <h3>Fleet State</h3>
         <div class="toolbar">
           <button onclick="refreshAll()">Refresh</button>
-          <span class="pill" id="brokerMode">broker: -</span>
-          <span class="pill" id="fleetConfigured">configured: 0</span>
-          <span class="pill" id="lastDispatch">last dispatch: -</span>
         </div>
         <div style="max-height: 340px; overflow: auto;">
           <table>
@@ -327,7 +815,8 @@ INDEX_HTML = """<!doctype html>
           </table>
         </div>
       </section>
-      <aside class="panel col-4">
+
+      <aside class="panel">
         <h3>Canary Decision</h3>
         <div id="decisionCard" class="card-inline">
           <div class="muted">No decision yet.</div>
@@ -335,24 +824,38 @@ INDEX_HTML = """<!doctype html>
         <div style="height: 12px;"></div>
         <h3>Dispatch Controls</h3>
         <div class="card-inline">
-          <div><label>Run ID</label> <input id="run_id" value="run_manual_001" /></div>
-          <div><label>Canary Percentage (%)</label> <input id="percentage" type="number" min="1" max="100" value="5" /></div>
-          <div><label>Health Samples / Target Node</label> <input id="telemetrySamples" type="number" min="0" max="20" value="1" /></div>
-          <div><label>Ready Payload JSON</label>
-            <textarea id="payload" rows="13">{\"run_id\":\"run_manual_001\",\"plan\":{\"intent\":\"reduce_noise_and_bandwidth\",\"target_metric\":\"accelerometer\",\"sampling_rate_hz\":2,\"log_level\":\"WARNING\",\"filter\":{\"type\":\"median\",\"window_size\":5},\"telemetry_collection\":{\"metrics\":[\"accelerometer\",\"temperature\",\"battery\"],\"aggregation_window_seconds\":5,\"publish_mode\":\"summary_and_anomalies\",\"max_payload_kbps\":8},\"deployment\":{\"strategy\":\"canary\",\"percentage\":5,\"observation_window_seconds\":10},\"rollback\":{\"enabled\":true,\"max_latency_ms\":250,\"max_error_rate\":0.02,\"min_telemetry_health\":0.95}},\"verification\":{\"decision\":\"ready_for_canary\",\"risk_score\":0.1}}</textarea>
+          <div>
+            <label class="inline-label">Run ID</label>
+            <input class="inline-input" id="run_id" value="run_manual_001" />
           </div>
-          <div><button onclick="submitDispatch()">Dispatch Canary</button> <span id="dispatchState" class="muted"></span></div>
+          <div>
+            <label class="inline-label">Canary Percentage (%)</label>
+            <input class="inline-input" id="percentage" type="number" min="1" max="100" value="5" />
+          </div>
+          <div>
+            <label class="inline-label">Health Samples / Target Node</label>
+            <input class="inline-input" id="telemetrySamples" type="number" min="0" max="20" value="1" />
+          </div>
+          <div>
+            <label class="inline-label">Ready Payload JSON</label>
+            <textarea id="payload" rows="12">{"run_id":"run_manual_001","plan":{"intent":"reduce_noise_and_bandwidth","target_metric":"accelerometer","sampling_rate_hz":2,"log_level":"WARNING","filter":{"type":"median","window_size":5},"telemetry_collection":{"metrics":["accelerometer","temperature","battery"],"aggregation_window_seconds":5,"publish_mode":"summary_and_anomalies","max_payload_kbps":8},"deployment":{"strategy":"canary","percentage":5,"observation_window_seconds":10},"rollback":{"enabled":true,"max_latency_ms":250,"max_error_rate":0.02,"min_telemetry_health":0.95}},"verification":{"decision":"ready_for_canary","risk_score":0.1}}</textarea>
+          </div>
+          <div>
+            <button onclick="submitDispatch()">Dispatch Canary</button>
+            <span id="dispatchState" class="muted"></span>
+          </div>
           <pre class="log" id="dispatchResult">No dispatch yet.</pre>
         </div>
       </aside>
     </div>
 
-    <div class="row">
-      <section class="panel col-6">
+    <div class="debug-one-col">
+      <section class="panel">
         <h3>Telemetry Event Timeline</h3>
         <div id="eventLog" class="log" style="max-height: 220px;"></div>
       </section>
-      <section class="panel col-6">
+
+      <section class="panel">
         <h3>Trace Explorer</h3>
         <div class="toolbar">
           <button onclick="loadTraces()">Reload Traces</button>
@@ -362,10 +865,8 @@ INDEX_HTML = """<!doctype html>
         <div id="traceList" class="trace-list"></div>
         <pre id="traceDetails" class="log" style="max-height: 220px; margin-top: 8px;"></pre>
       </section>
-    </div>
 
-    <div class="row">
-      <section class="panel col-12">
+      <section class="panel">
         <h3>Scenario Replay</h3>
         <div class="toolbar">
           <input id="replayRunId" placeholder="run_id" />
@@ -392,6 +893,15 @@ INDEX_HTML = """<!doctype html>
       return payload;
     }
 
+    function setBadgeState(elementId, state, label) {
+      const el = document.getElementById(elementId);
+      if (!el) {
+        return;
+      }
+      el.className = "state-chip " + state;
+      el.textContent = label;
+    }
+
     function healthBarClass(v) {
       if (v >= 0.95) return "good";
       if (v >= 0.85) return "warn";
@@ -404,7 +914,35 @@ INDEX_HTML = """<!doctype html>
         return Math.round(safe * 100);
       });
       while (normalized.length < 20) normalized.unshift(0);
-      return `<div class=\"spark\">${normalized.map((v) => `<span style=\"height:${v}px\" title=\"${v}%\"></span>`).join(\"\")}</div>`;
+      return `<div class="spark">${normalized.map((v) => `<span style="height:${v}px" title="${v}%"></span>`).join("")}</div>`;
+    }
+
+    function normalizeDecisionClass(decision) {
+      if (decision === "ready_for_canary" || decision === "promote") return "good";
+      if (decision === "blocked" || decision === "rollback") return "bad";
+      if (decision === "running") return "warn";
+      return "muted";
+    }
+
+    function formatJson(value) {
+      if (typeof value === "string") {
+        try {
+          return JSON.stringify(JSON.parse(value), null, 2);
+        } catch {
+          return value;
+        }
+      }
+      return value ? JSON.stringify(value, null, 2) : "";
+    }
+
+    function copyRawPlanJson() {
+      const raw = document.getElementById("operatorRawPlan").textContent;
+      navigator.clipboard?.writeText(raw).catch(() => {});
+    }
+
+    function copyParsedPlanJson() {
+      const parsed = document.getElementById("operatorParsedPlan").textContent;
+      navigator.clipboard?.writeText(parsed).catch(() => {});
     }
 
     function renderSummary(state) {
@@ -415,7 +953,7 @@ INDEX_HTML = """<!doctype html>
       const trace = state.last_evaluation ? state.last_evaluation.run_id : "-";
       const riskText = typeof risk === "number" ? risk.toFixed(2) : risk;
       const passText = typeof passRate === "number" ? `${Math.round(passRate * 100)}%` : "n/a";
-      const decisionClass = decision === "promote" ? "good" : decision === "rollback" ? "bad" : "muted";
+      const decisionClass = normalizeDecisionClass(decision);
 
       document.getElementById("summaryCards").innerHTML = `
         <div class="summary-card">
@@ -436,7 +974,7 @@ INDEX_HTML = """<!doctype html>
         <div class="summary-card">
           <div class="label">Latest Dispatch</div>
           <div class="value">${trace}</div>
-          <div class="muted">Target nodes: ${(state.last_dispatch && state.last_dispatch.target_nodes ? state.last_dispatch.target_nodes.join(',') : "-")}</div>
+          <div class="muted">Target nodes: ${state.last_dispatch && state.last_dispatch.target_nodes ? state.last_dispatch.target_nodes.join(',') : "-"}</div>
         </div>
       `;
       document.getElementById("decisionCard").innerHTML = `
@@ -462,14 +1000,14 @@ INDEX_HTML = """<!doctype html>
         return `
           <tr>
             <td><strong>${node.node_id}</strong><div class="muted">samples: ${node.telemetry_count}</div></td>
-            <td class="${statusClass}">Last: ${lastHealth} ${node.last_telemetry && node.last_telemetry.ts ? `<div class=\"muted\">${node.last_telemetry.ts}</div>` : ""}</td>
+            <td class="${statusClass}">Last: ${lastHealth} ${node.last_telemetry && node.last_telemetry.ts ? `<div class="muted">${node.last_telemetry.ts}</div>` : ""}</td>
             <td>${buildSpark(sparkVals)}</td>
-            <td><div>sampling_rate_hz: ${configSampleRate}</div><div class=\"muted\">deployment: ${(latestConfig.deployment || {}).percentage ?? "-"}</div></td>
-            <td><div>${event.event || "-"}</div><div class=\"muted\">${event.status || ""} ${event.reason ? `· ${event.reason}` : ""}</div></td>
+            <td><div>sampling_rate_hz: ${configSampleRate}</div><div class="muted">deployment: ${(latestConfig.deployment || {}).percentage ?? "-"}</div></td>
+            <td><div>${event.event || "-"}</div><div class="muted">${event.status || ""} ${event.reason ? `· ${event.reason}` : ""}</div></td>
           </tr>
         `;
       }).join("");
-      document.getElementById("fleetTable").innerHTML = rows || `<tr><td colspan=\"5\">No node.</td></tr>`;
+      document.getElementById("fleetTable").innerHTML = rows || `<tr><td colspan="5">No node.</td></tr>`;
     }
 
     function renderEvents(state) {
@@ -521,9 +1059,6 @@ INDEX_HTML = """<!doctype html>
       ]);
       state.events = events;
       lastState = state;
-      if (!state.last_dispatch && !state.last_evaluation && !state.events.length) {
-        // warm state while waiting
-      }
       renderSummary(state);
       renderFleet(state);
       renderEvents(state);
@@ -588,14 +1123,59 @@ INDEX_HTML = """<!doctype html>
       }
     }
 
+    function statusClassForStep(step) {
+      const raw = String(step || "done").toLowerCase();
+      if (raw === "running" || raw === "pending") return "running";
+      if (raw === "failed") return "failed";
+      if (raw === "skipped") return "skipped";
+      return "done";
+    }
+
+    function renderOperatorPipeline(steps) {
+      const container = document.getElementById("operatorPipeline");
+      const source = steps || [];
+      if (!source.length) {
+        container.innerHTML = `<div class="pipeline-empty">No pipeline steps yet.</div>`;
+        return;
+      }
+      container.innerHTML = source.map((step, index) => {
+        const status = statusClassForStep(step.status);
+        const label = (step.step || "unknown").replace(/_/g, " ");
+        const details = step.details || "";
+        const payload = step.data && Object.keys(step.data).length ? `<pre class="payload">${formatJson(step.data)}</pre>` : "";
+        return `
+          <div class="pipeline-step ${status}">
+            <div class="header">
+              <span>${index + 1}. ${label}</span>
+              <span class="pipeline-status-badge ${status}">${status}</span>
+            </div>
+            <div class="meta">${details}</div>
+            ${payload}
+          </div>
+        `;
+      }).join("");
+    }
+
     async function runOperatorPlan() {
       const prompt = document.getElementById("operatorPrompt").value;
       const plannerMode = document.getElementById("plannerMode").value;
       const scenarioCount = Number(document.getElementById("operatorScenarioCount").value);
       const workers = Number(document.getElementById("operatorWorkers").value);
       const adaptive = document.getElementById("operatorAdaptive").value === "true";
-      document.getElementById("operatorState").textContent = "running...";
-      document.getElementById("operatorResult").textContent = "Generating plan, running schema gate, verification matrix, and trace save...";
+
+      setBadgeState("operatorState", "running", "running");
+      setBadgeState("pipelineState", "running", "running");
+      document.getElementById("operatorFlowSummary").textContent = "pipeline invoked";
+      renderOperatorPipeline([
+        {
+          step: "prompt_capture",
+          status: "running",
+          details: "Prompt captured and normalized. Waiting for model and harness steps.",
+        },
+      ]);
+      document.getElementById("operatorRawPlan").textContent = "waiting for OpenAI raw output...";
+      document.getElementById("operatorParsedPlan").textContent = "waiting for schema parse...";
+      document.getElementById("operatorResult").textContent = "Running harness pipeline: model client, schema gate, verification matrix, trace save...";
 
       try {
         const result = await fetchJson("/api/operator/run", {
@@ -611,8 +1191,16 @@ INDEX_HTML = """<!doctype html>
           }),
         });
         latestReadyPayload = result.ready_payload || null;
+        document.getElementById("operatorRawPlan").textContent = result.openai_raw_plan_json ? formatJson(result.openai_raw_plan_json) : "No raw plan json available.";
+        document.getElementById("operatorParsedPlan").textContent = result.parsed_plan
+          ? formatJson(result.parsed_plan)
+          : "No parsed parameters.";
         document.getElementById("operatorResult").textContent = JSON.stringify(result, null, 2);
-        document.getElementById("operatorState").textContent = result.ready_payload ? "ready for canary" : "blocked";
+        const decision = result.ready_payload ? "ready_for_canary" : "blocked";
+        setBadgeState("operatorState", decision === "ready_for_canary" ? "ready" : "blocked", decision);
+        setBadgeState("pipelineState", "state-idle", "done");
+        document.getElementById("operatorFlowSummary").textContent = decision === "ready_for_canary" ? "verified and ready" : "blocked by harness";
+        renderOperatorPipeline(result.pipeline_steps || result.pipeline?.steps || []);
         if (latestReadyPayload) {
           document.getElementById("payload").value = JSON.stringify(latestReadyPayload, null, 2);
           document.getElementById("run_id").value = latestReadyPayload.run_id;
@@ -621,8 +1209,11 @@ INDEX_HTML = """<!doctype html>
         await refreshAll();
       } catch (err) {
         latestReadyPayload = null;
+        setBadgeState("operatorState", "failed", "failed");
+        setBadgeState("pipelineState", "failed", "failed");
+        document.getElementById("operatorPipeline").innerHTML = `<div class="pipeline-step failed"><div class="header"><span>pipeline</span><span class="pipeline-status-badge failed">failed</span></div><div class="meta">${err}</div></div>`;
         document.getElementById("operatorResult").textContent = String(err);
-        document.getElementById("operatorState").textContent = "failed";
+        document.getElementById("operatorFlowSummary").textContent = "pipeline failed before execution.";
       }
     }
 
@@ -631,13 +1222,13 @@ INDEX_HTML = """<!doctype html>
         try {
           latestReadyPayload = JSON.parse(document.getElementById("payload").value);
         } catch (err) {
-          document.getElementById("operatorState").textContent = "no verified payload";
+          setBadgeState("operatorState", "failed", "no verified payload");
           return;
         }
       }
       document.getElementById("payload").value = JSON.stringify(latestReadyPayload, null, 2);
       await submitDispatch();
-      document.getElementById("operatorState").textContent = "dispatch submitted";
+      setBadgeState("operatorState", "state-idle", "dispatch submitted");
     }
 
     async function replayScenario() {
@@ -734,6 +1325,24 @@ class FleetController:
             if len(self.events) > 200:
                 self.events = self.events[-200:]
 
+    def _add_operator_step(
+        self,
+        pipeline: list[dict[str, Any]],
+        step: str,
+        status: str,
+        details: str,
+        data: dict[str, Any] | None = None,
+    ) -> None:
+        pipeline.append(
+            {
+                "ts": time.time(),
+                "step": step,
+                "status": status,
+                "details": details,
+                "data": data or {},
+            },
+        )
+
     def _start_telemetry_loops(self) -> None:
         for node in self.nodes:
             def _worker(target_node: EdgeNode = node) -> None:
@@ -809,35 +1418,114 @@ class FleetController:
         prompt = (prompt or DEFAULT_OPERATOR_PROMPT).strip()
         scenario_count = max(5, min(500, int(scenario_count)))
         workers = max(1, min(16, int(workers)))
+        pipeline_steps: list[dict[str, Any]] = []
 
         self._append_event(
             "operator_start",
             f"Planning via {planner_mode}; scenarios={scenario_count}; adaptive={adaptive}",
             {"planner_mode": planner_mode, "scenario_count": scenario_count},
         )
+        self._add_operator_step(
+            pipeline_steps,
+            "prompt_capture",
+            "done",
+            "Engineer prompt received and normalized.",
+            {"prompt": prompt},
+        )
 
         client: PlanClient
         if planner_mode == "demo":
             client = DemoPlanClient()
+            self._add_operator_step(
+                pipeline_steps,
+                "planner_client",
+                "done",
+                "Loaded demo plan client.",
+            )
         elif planner_mode == "openai":
             client = OpenAIResponsesPlanClient()
+            self._add_operator_step(
+                pipeline_steps,
+                "planner_client",
+                "done",
+                f"Loaded OpenAI Responses client ({os.getenv('OPENAI_MODEL', 'gpt-5.5')}).",
+            )
         else:
+            self._add_operator_step(
+                pipeline_steps,
+                "planner_client",
+                "failed",
+                "planner_mode must be openai or demo.",
+            )
             raise RuntimeError("planner_mode must be 'openai' or 'demo'")
 
+        self._add_operator_step(
+            pipeline_steps,
+            "plan_generation",
+            "running",
+            "Calling model client and validating typed plan constraints.",
+        )
         harness = run_harness(prompt, client, run_id=make_run_id())
+        pipeline_steps[-1]["status"] = "done"
+
+        raw_plan_json = harness.raw_plan_json
+        parsed_plan: dict[str, Any] | None = None
+        if harness.plan is not None:
+            try:
+                parsed_plan = asdict(OptimizationPlan.from_dict(harness.plan))
+                self._add_operator_step(
+                    pipeline_steps,
+                    "parse_and_gate",
+                    "done",
+                    f"Schema gate passed; deployment_decision={harness.deployment_decision}.",
+                    {"plan_status": harness.plan_status},
+                )
+            except Exception as exc:
+                self._add_operator_step(
+                    pipeline_steps,
+                    "parse_and_gate",
+                    "failed",
+                    f"Parsed raw plan but conversion to typed model failed: {exc}",
+                )
+        else:
+            self._add_operator_step(
+                pipeline_steps,
+                "parse_and_gate",
+                "failed",
+                "No raw plan produced by planner.",
+            )
+
         payload: dict[str, Any] = {
             "prompt": prompt,
             "planner_mode": planner_mode,
             "harness": harness.to_dict(),
+            "openai_raw_plan_json": raw_plan_json,
+            "parsed_plan": parsed_plan,
+            "pipeline_steps": pipeline_steps,
         }
 
         if harness.deployment_decision != "ready_for_canary" or harness.plan is None:
+            self._add_operator_step(
+                pipeline_steps,
+                "verification_matrix",
+                "skipped",
+                "Harness gate blocked this proposal.",
+                {"deployment_decision": harness.deployment_decision, "plan_status": harness.plan_status},
+            )
+            payload["pipeline"] = {"steps": pipeline_steps}
             payload["ready_payload"] = None
             self._record_operator_result(payload, "operator_blocked", "Operator plan blocked before verification.")
             return payload
 
         plan = OptimizationPlan.from_dict(harness.plan)
         scenarios = generate_scenario_matrix(count=scenario_count, seed_start=1)
+        self._add_operator_step(
+            pipeline_steps,
+            "verification_matrix",
+            "running",
+            f"Running matrix verification with adaptive={adaptive}, workers={workers}, adaptive_rounds={adaptive_rounds}.",
+            {"scenario_count": scenario_count},
+        )
         report = run_verification_matrix(
             plan=plan,
             scenarios=scenarios,
@@ -847,15 +1535,50 @@ class FleetController:
             adaptive_budget=adaptive_budget,
             seed_start=1,
         )
+        pipeline_steps[-1]["status"] = "done"
+        self._add_operator_step(
+            pipeline_steps,
+            "verification_matrix",
+            "done",
+            f"Risk={report.risk_score:.3f}, pass_rate={report.pass_rate:.3f}, decision={report.decision}.",
+            {"decision": report.decision, "pass_rate": report.pass_rate, "risk_score": report.risk_score},
+        )
 
         setting_suggestion_report = None
         if suggest_settings:
+            self._add_operator_step(
+                pipeline_steps,
+                "setting_suggestion",
+                "running",
+                "Generating safe setting suggestions.",
+            )
             setting_suggestion_report = suggest_setting_adjustments(plan=plan, report=report)
+            self._add_operator_step(
+                pipeline_steps,
+                "setting_suggestion",
+                "done",
+                "Setting suggestions attached (if any).",
+                {"count": len(setting_suggestion_report.mutually_exclusive_options)},
+            )
+        else:
+            self._add_operator_step(
+                pipeline_steps,
+                "setting_suggestion",
+                "skipped",
+                "Suggestion step is disabled.",
+            )
 
         executed_scenarios = (
             tuple(ScenarioSpec(**spec) for spec in report.executed_scenarios)
             if report.executed_scenarios
             else tuple(scenarios)
+        )
+        self._add_operator_step(
+            pipeline_steps,
+            "trace_generation",
+            "running",
+            "Building replayable verification trace.",
+            {"executed_scenarios": len(executed_scenarios)},
         )
         trace = build_verification_trace(
             plan=plan,
@@ -868,6 +1591,14 @@ class FleetController:
         )
         trace_path = self.trace_dir / f"{trace.run_id}.json"
         save_trace(trace, trace_path)
+        pipeline_steps[-1]["status"] = "done"
+        self._add_operator_step(
+            pipeline_steps,
+            "trace_generation",
+            "done",
+            f"Trace saved to {trace_path}.",
+            {"trace_path": str(trace_path)},
+        )
 
         ready_payload = None
         if report.decision == "ready_for_canary":
@@ -879,6 +1610,20 @@ class FleetController:
             }
             if setting_suggestion_report is not None:
                 ready_payload["setting_suggestions"] = setting_suggestion_report.to_dict()
+            self._add_operator_step(
+                pipeline_steps,
+                "final_decision",
+                "done",
+                "Decision ready_for_canary; payload prepared for deploy controls.",
+            )
+        else:
+            self._add_operator_step(
+                pipeline_steps,
+                "final_decision",
+                "done",
+                f"Decision {report.decision}; deployment not allowed.",
+                {"decision": report.decision},
+            )
 
         payload.update(
             {
@@ -888,6 +1633,8 @@ class FleetController:
                 ),
                 "trace": {"run_id": trace.run_id, "path": str(trace_path)},
                 "ready_payload": ready_payload,
+                "pipeline": {"steps": pipeline_steps},
+                "pipeline_steps": pipeline_steps,
             }
         )
         event_type = "operator_ready" if ready_payload else "operator_blocked"
