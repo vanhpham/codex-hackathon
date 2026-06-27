@@ -112,7 +112,7 @@ Key requirements:
 Status:
 
 ```text
-Complete baseline. Sprint 4 should generalize this into scenario-matrix verification.
+Complete baseline. Sprint 4 generalizes this into scenario-matrix verification.
 ```
 
 ## Sprint 3: OpenAI Structured Harness
@@ -177,9 +177,9 @@ Key requirements:
 Acceptance:
 
 ```text
-Good plan passes the verification matrix.
+Complete. Good plan passes the verification matrix.
 Risky plan fails specific scenarios with clear reasons.
-Runner can execute hundreds of local simulations quickly.
+Runner can execute 50+ local simulations quickly.
 Risk report is JSON-serializable and replayable.
 ```
 

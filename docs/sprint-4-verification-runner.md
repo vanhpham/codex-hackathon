@@ -167,6 +167,21 @@ run verification
 print JSON risk report
 ```
 
+Implemented command:
+
+```text
+.venv/bin/python scripts/run_verification_matrix.py --scenario-count 50
+```
+
+Expected default result:
+
+```text
+decision: ready_for_canary
+pass_rate: >= 0.95
+risk_score: <= 0.25
+failed_scenarios: recorded for replay
+```
+
 ## Test Scenarios
 
 | Scenario | Expected Result |
@@ -189,7 +204,18 @@ Sprint 4 is complete when:
 - risky plan is blocked
 - tests cover deterministic replay and aggregation
 
+Current implementation files:
+
+```text
+swarmforge/scenarios.py
+swarmforge/invariants.py
+swarmforge/risk.py
+swarmforge/verification.py
+scripts/run_verification_matrix.py
+tests/test_scenarios.py
+tests/test_verification.py
+```
+
 ## Handoff
 
 Sprint 5 consumes `RiskReport` and persists it as trace/eval data.
-

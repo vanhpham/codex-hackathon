@@ -13,6 +13,8 @@ sprint-4-verification-runner
 Important recent commits:
 
 ```text
+a39125e feat: add verification scenario models
+ef1c8e3 docs: add current state audit
 619a62e Merge pull request #2 from vanhpham/sprint-3-openai-harness
 cb572ef docs: plan sprint 4 mqtt edge loop
 14c2de8 docs: pivot to AI verification harness
@@ -34,7 +36,7 @@ If a clean PR history matters later, squash or rebase the branch before opening 
 | Sprint 1 | Product contract and typed control plan | Docs updated for AI verification harness and broader control knobs | Aligned |
 | Sprint 2 | Local simulator and baseline scoring | Implemented simulator, scoring, and tests | Aligned |
 | Sprint 3 | OpenAI structured harness | Implemented Responses API structured plan path, fake-client tests, live smoke command | Aligned |
-| Sprint 4 | Scalable verification runner | Docs/spec complete, implementation not started yet | Next build target |
+| Sprint 4 | Scalable verification runner | Implemented scenario matrix, invariants, verification runner, risk report, CLI, and tests | Aligned |
 | Sprint 5 | Trace/eval records and dashboard | Docs/spec complete, implementation later | Planned |
 | Sprint 6 | MQTT edge loop and canary runtime | Docs/spec moved from old Sprint 4, implementation later | Planned |
 
@@ -48,30 +50,34 @@ swarmforge/harness.py
 swarmforge/env.py
 swarmforge/schemas.py
 swarmforge/simulator.py
+swarmforge/scenarios.py
+swarmforge/invariants.py
+swarmforge/risk.py
+swarmforge/verification.py
 scripts/run_openai_harness.py
+scripts/run_verification_matrix.py
 tests/test_harness.py
 tests/test_simulator.py
+tests/test_scenarios.py
+tests/test_verification.py
 requirements.txt
 ```
 
 These support:
 
 ```text
-prompt -> OpenAI structured plan -> schema gate -> baseline simulator -> baseline decision
+prompt -> OpenAI structured plan -> schema gate -> baseline simulator -> verification matrix -> risk report
 ```
 
 They do not yet support:
 
 ```text
-ScenarioMatrix
-VerificationRunner
-RiskReport
 Trace persistence
 Dashboard
 MQTT runtime
 ```
 
-That gap is expected after Sprint 3.
+That gap is expected after Sprint 4.
 
 ## Known Workspace Issue
 
@@ -91,8 +97,8 @@ They are not part of the committed Sprint 4 verification pivot. They can be:
 Recommended choice:
 
 ```text
-Delete or stash them before implementing Sprint 4 verification runner.
-Recreate/reuse them intentionally in Sprint 6.
+Keep them untracked for now, and promote them intentionally in Sprint 6.
+Do not include them in the Sprint 4 verification commit.
 ```
 
 ## Current Verification
@@ -103,33 +109,34 @@ Unit tests currently pass in the local workspace:
 .venv/bin/python -m unittest
 ```
 
+Sprint 4 smoke command:
+
+```text
+.venv/bin/python scripts/run_verification_matrix.py --scenario-count 50
+```
+
 Important nuance:
 
-- The committed Sprint 1-3 test suite covers harness and simulator behavior.
+- The committed Sprint 1-4 test suite covers harness, simulator, scenarios, and verification behavior.
 - The current workspace also includes untracked Sprint 6 OTA tests, so local test count may include those files until the workspace is cleaned.
 
 ## Gaps To Close Next
 
-Sprint 4 implementation should add:
+Sprint 5 implementation should add:
 
 ```text
-swarmforge/scenarios.py
-swarmforge/invariants.py
-swarmforge/verification.py
-swarmforge/risk.py
-scripts/run_verification_matrix.py
-tests/test_verification.py
+swarmforge/traces.py
+swarmforge/evals.py
+scripts/replay_trace.py
+scripts/export_eval_case.py
 ```
 
-Minimum Sprint 4 acceptance:
+Minimum Sprint 5 acceptance:
 
-- deterministic scenario matrix generation
-- 50+ local scenario runs
-- pass/fail invariant aggregation
-- JSON-serializable risk report
-- good plan passes
-- risky plan blocks
-- replay with same seed produces same report
+- accepted and blocked runs save trace records
+- failed scenario seeds are replayable
+- eval-case export exists
+- terminal/dashboard summary explains risk report
 
 ## Final Audit Verdict
 
@@ -138,8 +145,7 @@ The committed project direction now matches the hackathon track better than the 
 Status:
 
 ```text
-Sprints 1-3: aligned and implemented.
-Sprint 4: aligned in docs, implementation should start next.
+Sprints 1-4: aligned and implemented.
 Sprint 5-6: planned and documented.
 Workspace: one untracked MQTT artifact set should be cleaned or intentionally deferred.
 ```

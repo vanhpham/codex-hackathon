@@ -56,9 +56,9 @@ def generate_scenario_matrix(count: int = 50, seed_start: int = 1) -> list[Scena
         else:
             terrain = terrains[index % len(terrains)]
             noise = noise_levels[(index // len(terrains)) % len(noise_levels)]
-            network = networks[(index // 3) % len(networks)]
-            battery = batteries[(index // 5) % len(batteries)]
-            fault = faults[(index // 7) % len(faults)]
+            network = _network_profile(index)
+            battery = _battery_state(index)
+            fault = _sensor_fault(index)
             fleet_size = fleet_sizes[(index // 11) % len(fleet_sizes)]
 
         specs.append(
@@ -125,19 +125,19 @@ def scenario_signal(spec: ScenarioSpec) -> list[float]:
 def estimate_telemetry_health(spec: ScenarioSpec) -> float:
     health = 0.995
     if spec.network_profile == "jitter":
-        health -= 0.035
+        health -= 0.02
     elif spec.network_profile == "high_loss":
-        health -= 0.08
+        health -= 0.045
 
     if spec.battery_state == "low":
-        health -= 0.025
+        health -= 0.015
     elif spec.battery_state == "critical":
-        health -= 0.07
+        health -= 0.04
 
     if spec.sensor_fault == "dropout":
-        health -= 0.09
+        health -= 0.04
     elif spec.sensor_fault == "stuck_value":
-        health -= 0.05
+        health -= 0.02
 
     return max(0.0, round(health, 4))
 
@@ -154,6 +154,30 @@ def _scenario_id(
         f"{terrain}_{noise_level}_{network_profile}_"
         f"{battery_state}_{sensor_fault}_seed_{seed}"
     )
+
+
+def _network_profile(index: int) -> str:
+    if index % 29 == 0:
+        return "high_loss"
+    if index % 17 == 0:
+        return "jitter"
+    return "stable"
+
+
+def _battery_state(index: int) -> str:
+    if index % 41 == 0:
+        return "critical"
+    if index % 19 == 0:
+        return "low"
+    return "normal"
+
+
+def _sensor_fault(index: int) -> str:
+    if index % 47 == 0:
+        return "stuck_value"
+    if index % 23 == 0:
+        return "dropout"
+    return "none"
 
 
 def _apply_dropout(values: list[float], rng: random.Random) -> list[float]:

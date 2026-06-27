@@ -225,8 +225,13 @@ Implemented:
 - `swarmforge/harness.py`: OpenAI plan call, schema validation, simulator call, final decision.
 - `swarmforge/schemas.py`: internal dataclass validation and result models.
 - `swarmforge/simulator.py`: deterministic signal simulation, filtering, bandwidth, latency, scoring.
+- `swarmforge/scenarios.py`: deterministic adversarial scenario matrix.
+- `swarmforge/invariants.py`: safety invariant checks.
+- `swarmforge/verification.py`: multi-simulation verification runner.
+- `swarmforge/risk.py`: risk report and per-case result models.
 - `scripts/run_openai_harness.py`: live OpenAI SDK smoke path.
-- unit tests for simulator and harness.
+- `scripts/run_verification_matrix.py`: local verification matrix smoke path.
+- unit tests for simulator, harness, scenarios, and verification.
 
 ## Run Commands
 
@@ -246,6 +251,12 @@ Run live OpenAI structured harness:
 
 ```bash
 .venv/bin/python scripts/run_openai_harness.py
+```
+
+Run local verification matrix:
+
+```bash
+.venv/bin/python scripts/run_verification_matrix.py --scenario-count 50
 ```
 
 Required local `.env`:
