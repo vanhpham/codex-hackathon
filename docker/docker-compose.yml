@@ -72,7 +72,7 @@ services:
       --telemetry-interval ${SWARM_TELEMETRY_INTERVAL:-1.5}
       --node-prefix edge-
       --health-curve ${SWARM_HEALTH_CURVE:-healthy}
-      --health-floor ${SWARM_HEALTH_FLOOR:-0.95}"
+      --health-floor ${SWARM_HEALTH_FLOOR:-0.85}"
 
   swarmforge-verification:
     container_name: swarmforge-verification

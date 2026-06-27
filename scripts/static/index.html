@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>SwarmForge Harness — AI Verification Control Plane</title>
+  <meta name="description" content="AI-assisted verification harness for safe edge-swarm operational tuning"/>
+  <link rel="stylesheet" href="/static/css/main.css"/>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header" id="appHeader">
+    <div>
+      <div class="app-title">⚡ SwarmForge Harness</div>
+      <div class="app-subtitle">AI proposes · Harness verifies · Harness decides</div>
+    </div>
+    <div class="header-badges">
+      <span class="badge idle" id="globalState">Idle</span>
+      <span class="pill" id="brokerPill">broker: —</span>
+      <span class="pill" id="fleetPill">fleet: 0</span>
+      <span class="pill" id="dispatchPill">dispatch: —</span>
+    </div>
+  </header>
+
+  <!-- ===== SUMMARY CARDS ===== -->
+  <div class="summary-row" id="summaryRow">
+    <div class="summary-card">
+      <div class="label">Fleet Nodes</div>
+      <div class="value" id="sumNodes">—</div>
+      <div class="detail" id="sumNodesDetail">configured: —</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Broker Mode</div>
+      <div class="value" id="sumBroker">—</div>
+      <div class="detail" id="sumBrokerDetail">prefix: —</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Verification Decision</div>
+      <div class="value" id="sumDecision">—</div>
+      <div class="detail" id="sumDecisionDetail">pass rate: — · risk: —</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">Latest Run</div>
+      <div class="value" id="sumRunId">—</div>
+      <div class="detail" id="sumRunDetail">targets: —</div>
+    </div>
+  </div>
+
+  <!-- ===== PIPELINE FLOW ===== -->
+  <section class="panel pipeline-section" id="pipelineSection">
+    <div class="panel-title">
+      <h3>🔗 Verification Pipeline</h3>
+      <span class="sub">Click any stage to inspect details</span>
+    </div>
+    <div class="pipeline-flow" id="pipelineFlow">
+      <!-- Nodes injected by pipeline.js -->
+    </div>
+  </section>
+
+  <!-- ===== STAGE DETAIL ===== -->
+  <section class="panel detail-section" id="detailSection">
+    <div class="panel-title">
+      <h3 id="detailTitle">📝 1. Engineer Prompt</h3>
+      <span class="badge idle" id="detailBadge">idle</span>
+    </div>
+    <div id="detailContent">
+      <!-- Default: show prompt controls -->
+      <div id="stagePrompt">
+        <textarea class="prompt-area" id="promptInput">Xe dang vao vung bun lay, rung lac manh. Hay giam sample rate xuong 2Hz, them median filter cho gia toc, va chuyen log level sang WARNING.</textarea>
+        <div class="controls-grid">
+          <div class="control-group">
+            <label for="plannerMode">Planner</label>
+            <select id="plannerMode">
+              <option value="openai" selected>OpenAI</option>
+              <option value="demo">Demo</option>
+            </select>
+          </div>
+          <div class="control-group">
+            <label for="scenarioCount">Scenarios</label>
+            <input id="scenarioCount" type="number" min="5" max="500" value="50"/>
+          </div>
+          <div class="control-group">
+            <label for="workerCount">Workers</label>
+            <input id="workerCount" type="number" min="1" max="16" value="4"/>
+          </div>
+          <div class="control-group">
+            <label for="adaptiveMode">Adaptive</label>
+            <select id="adaptiveMode">
+              <option value="true" selected>On</option>
+              <option value="false">Off</option>
+            </select>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn primary" id="btnGenerate" onclick="App.runPipeline()">▶ Generate + Verify</button>
+          <button class="btn success" id="btnDeploy" onclick="App.deployCanary()" disabled>🚀 Deploy Verified Canary</button>
+        </div>
+      </div>
+
+      <!-- Stage 2: OpenAI Raw -->
+      <div id="stageRaw" class="hidden">
+        <div class="flex justify-between items-center mb-8">
+          <span class="dim">Raw JSON output from model before schema validation</span>
+          <button class="btn" onclick="App.copyText('rawPlanLog')">📋 Copy</button>
+        </div>
+        <pre class="log-block" id="rawPlanLog">No raw plan yet.</pre>
+      </div>
+
+      <!-- Stage 3: Schema Gate -->
+      <div id="stageGate" class="hidden">
+        <div class="dim mb-8">Schema validation and policy gate result</div>
+        <div id="gateResult">
+          <pre class="log-block" id="gatePlanLog">No parsed plan yet.</pre>
+        </div>
+        <div id="gateInvariants" class="mt-12"></div>
+      </div>
+
+      <!-- Stage 4: Simulator -->
+      <div id="stageSim" class="hidden">
+        <div class="dim mb-8">Local simulation: noise, bandwidth, latency, payload</div>
+        <div class="gauge-row" id="simGauges"></div>
+        <pre class="log-block compact mt-12" id="simLog">No simulation yet.</pre>
+      </div>
+
+      <!-- Stage 5: Verification Matrix -->
+      <div id="stageVerify" class="hidden">
+        <div class="dim mb-8">Multi-scenario adversarial verification</div>
+        <div class="gauge-row mb-12" id="verifyGauges"></div>
+        <div class="table-wrap" id="scenarioTable"></div>
+      </div>
+
+      <!-- Stage 6: Invariant Checks -->
+      <div id="stageInvariants" class="hidden">
+        <div class="dim mb-8">Safety invariant checks across all scenarios</div>
+        <div id="invariantList"></div>
+      </div>
+
+      <!-- Stage 7: Risk Report -->
+      <div id="stageRisk" class="hidden">
+        <div class="dim mb-8">Aggregated risk assessment and final decision</div>
+        <div id="decisionBanner"></div>
+        <div class="detail-grid" id="riskDetail"></div>
+      </div>
+
+      <!-- Stage 8: Canary Payload -->
+      <div id="stageCanary" class="hidden">
+        <div class="dim mb-8">OTA config payload ready for dispatch</div>
+        <div class="flex justify-between items-center mb-8">
+          <span class="badge idle" id="canaryBadge">not ready</span>
+          <button class="btn" onclick="App.copyText('canaryPayloadLog')">📋 Copy</button>
+        </div>
+        <pre class="log-block" id="canaryPayloadLog">No canary payload yet.</pre>
+      </div>
+
+      <!-- Stage 9: Edge Runtime -->
+      <div id="stageRuntime" class="hidden">
+        <div class="two-col">
+          <div>
+            <h4 class="mb-8">Fleet State</h4>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr>
+                  <th>Node</th><th>Telemetry</th><th>Health</th><th>Config</th><th>Event</th>
+                </tr></thead>
+                <tbody id="fleetTable"></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <h4 class="mb-8">Dispatch Controls</h4>
+            <div class="control-group mb-8">
+              <label>Run ID</label>
+              <input class="prompt-area" style="min-height:auto;padding:6px 8px" id="dispatchRunId" value="run_manual_001"/>
+            </div>
+            <div class="control-group mb-8">
+              <label>Canary %</label>
+              <input class="prompt-area" style="min-height:auto;padding:6px 8px" id="dispatchPct" type="number" min="1" max="100" value="5"/>
+            </div>
+            <div class="control-group mb-8">
+              <label>Health Samples</label>
+              <input class="prompt-area" style="min-height:auto;padding:6px 8px" id="dispatchSamples" type="number" min="0" max="20" value="1"/>
+            </div>
+            <button class="btn primary" onclick="App.manualDispatch()">Dispatch Canary</button>
+            <pre class="log-block compact mt-12" id="dispatchLog">No dispatch yet.</pre>
+            <h4 class="mt-16 mb-8">Canary Decision</h4>
+            <div id="canaryDecisionCard" class="dim">No decision yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DEBUG PANEL ===== -->
+  <section class="panel debug-section" id="debugSection">
+    <div class="panel-title">
+      <h3>🐞 Debug & Inspection</h3>
+      <span class="sub">Deep inspection of pipeline internals</span>
+    </div>
+    <div class="debug-tabs" id="debugTabs">
+      <button class="debug-tab active" data-tab="tabPipelineLog">Pipeline Log</button>
+      <button class="debug-tab" data-tab="tabScenarios">Scenario Inspector</button>
+      <button class="debug-tab" data-tab="tabTraces">Trace Explorer</button>
+      <button class="debug-tab" data-tab="tabReplay">Replay Diff</button>
+      <button class="debug-tab" data-tab="tabTelemetry">Fleet Telemetry</button>
+      <button class="debug-tab" data-tab="tabSuggestions">Settings Suggestions</button>
+    </div>
+
+    <!-- Tab: Pipeline Log -->
+    <div class="debug-pane active" id="tabPipelineLog">
+      <pre class="log-block" id="pipelineLogOutput" style="max-height:320px">Pipeline idle. Run a verification to see step-by-step logs.</pre>
+    </div>
+
+    <!-- Tab: Scenario Inspector -->
+    <div class="debug-pane" id="tabScenarios">
+      <div class="toolbar mb-8">
+        <select id="scenarioFilter">
+          <option value="all">All Scenarios</option>
+          <option value="failed">Failed Only</option>
+          <option value="passed">Passed Only</option>
+        </select>
+        <span class="dim" id="scenarioFilterCount">0 scenarios</span>
+      </div>
+      <div id="scenarioInspector" class="trace-list">
+        <div class="dim">Run a verification to see scenarios.</div>
+      </div>
+    </div>
+
+    <!-- Tab: Trace Explorer -->
+    <div class="debug-pane" id="tabTraces">
+      <div class="toolbar mb-8">
+        <button class="btn" onclick="Debug.loadTraces()">Reload Traces</button>
+        <select id="traceSelect"></select>
+        <button class="btn" onclick="Debug.loadSelectedTrace()">Load</button>
+      </div>
+      <div class="debug-grid">
+        <div class="trace-list" id="traceListContainer">
+          <div class="dim">No traces loaded.</div>
+        </div>
+        <pre class="log-block" id="traceDetailLog" style="max-height:320px">Select a trace to view details.</pre>
+      </div>
+    </div>
+
+    <!-- Tab: Replay Diff -->
+    <div class="debug-pane" id="tabReplay">
+      <div class="toolbar mb-8">
+        <div class="control-group">
+          <label>Run ID</label>
+          <input id="replayRunId" placeholder="run_id"/>
+        </div>
+        <div class="control-group">
+          <label>Scenario (optional)</label>
+          <input id="replayScenarioId" placeholder="scenario_id"/>
+        </div>
+        <button class="btn" onclick="Debug.replayScenario()">▶ Replay</button>
+      </div>
+      <pre class="log-block" id="replayOutput" style="max-height:320px">No replay yet.</pre>
+    </div>
+
+    <!-- Tab: Fleet Telemetry -->
+    <div class="debug-pane" id="tabTelemetry">
+      <div class="toolbar mb-8">
+        <button class="btn" onclick="App.refreshState()">Refresh</button>
+        <span class="dim" id="telemetryTimestamp">—</span>
+      </div>
+      <div id="telemetryTimeline" class="log-block" style="max-height:300px">No events yet.</div>
+    </div>
+
+    <!-- Tab: Setting Suggestions -->
+    <div class="debug-pane" id="tabSuggestions">
+      <div id="suggestionsContainer">
+        <div class="dim">Suggestions appear when a plan is blocked. Run a verification first.</div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script src="/static/js/pipeline.js"></script>
+<script src="/static/js/debug.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>

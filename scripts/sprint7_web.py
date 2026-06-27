@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import mimetypes
 import os
 import signal
 import sys
@@ -12,6 +13,8 @@ from dataclasses import dataclass, field, asdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+
+STATIC_DIR = Path(__file__).resolve().parent / "static"
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -1901,10 +1904,35 @@ class DashboardHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _send_static_file(self, file_path: Path) -> None:
+        if not file_path.exists() or not file_path.is_file():
+            self._send_json({"error": "not found"}, status=404)
+            return
+        # Security: ensure path is under STATIC_DIR
+        try:
+            file_path.resolve().relative_to(STATIC_DIR.resolve())
+        except ValueError:
+            self._send_json({"error": "forbidden"}, status=403)
+            return
+        content_type, _ = mimetypes.guess_type(str(file_path))
+        if content_type is None:
+            content_type = "application/octet-stream"
+        body = file_path.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self) -> None:  # noqa: N802
         parsed = urllib.parse.urlparse(self.path)
         if parsed.path == "/":
-            self._send_html(INDEX_HTML)
+            self._send_static_file(STATIC_DIR / "index.html")
+            return
+        if parsed.path.startswith("/static/"):
+            rel = parsed.path[len("/static/"):]
+            self._send_static_file(STATIC_DIR / rel)
             return
         if parsed.path == "/api/state":
             self._send_json(self.controller.state)

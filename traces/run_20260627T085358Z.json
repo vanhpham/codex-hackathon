@@ -1,0 +1,3830 @@
+{
+  "created_at": "2026-06-27T08:54:05.523334Z",
+  "model": "gpt-5.5",
+  "plan": {
+    "deployment": {
+      "observation_window_seconds": 10,
+      "percentage": 5.0,
+      "strategy": "canary"
+    },
+    "filter": {
+      "type": "median",
+      "window_size": 5
+    },
+    "intent": "reduce_noise",
+    "log_level": "WARNING",
+    "rollback": {
+      "enabled": true,
+      "max_error_rate": 0.02,
+      "max_latency_ms": 250.0,
+      "min_telemetry_health": 0.95
+    },
+    "sampling_rate_hz": 2.0,
+    "target_metric": "accelerometer",
+    "telemetry_collection": {
+      "aggregation_window_seconds": 10,
+      "max_payload_kbps": 16.0,
+      "metrics": [
+        "accelerometer",
+        "telemetry_health",
+        "error_count",
+        "config_version"
+      ],
+      "publish_mode": "summary_and_anomalies"
+    }
+  },
+  "prompt": "Xe dang vao vung bun lay, rung lac manh. Hay giam sample rate xuong 2Hz, them median filter cho gia toc, va chuyen log level sang WARNING.",
+  "run_id": "run_20260627T085358Z",
+  "scenario_records": [
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.746,
+          "noise_score_after": 0.0823,
+          "noise_score_before": 0.3241,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6958,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_high_stable_normal_none_seed_1"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "muddy_high_stable_normal_none_seed_1",
+        "seed": 1,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7461,
+          "noise_score_after": 0.0975,
+          "noise_score_before": 0.3841,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6958,
+          "telemetry_health": 0.975
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_high_jitter_normal_none_seed_2"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "jitter",
+        "noise_level": "high",
+        "scenario_id": "rocky_high_jitter_normal_none_seed_2",
+        "seed": 2,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": false,
+        "failed_invariants": [
+          {
+            "critical": false,
+            "name": "telemetry_health_above_floor",
+            "reason": "Telemetry health 0.9350 fell below floor 0.9500."
+          }
+        ],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.674,
+          "noise_score_after": 0.0804,
+          "noise_score_before": 0.2467,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.649,
+          "telemetry_health": 0.935
+        },
+        "reason": "Telemetry health 0.9350 fell below floor 0.9500.",
+        "scenario_id": "muddy_medium_high_loss_low_none_seed_3"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "low",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "high_loss",
+        "noise_level": "medium",
+        "scenario_id": "muddy_medium_high_loss_low_none_seed_3",
+        "seed": 3,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": false,
+        "failed_invariants": [
+          {
+            "critical": false,
+            "name": "telemetry_health_above_floor",
+            "reason": "Telemetry health 0.9400 fell below floor 0.9500."
+          }
+        ],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.3826,
+          "noise_score_after": 0.0642,
+          "noise_score_before": 0.1039,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.4595,
+          "telemetry_health": 0.94
+        },
+        "reason": "Telemetry health 0.9400 fell below floor 0.9500.",
+        "scenario_id": "smooth_low_stable_low_dropout_seed_4"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "low",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "smooth_low_stable_low_dropout_seed_4",
+        "seed": 4,
+        "sensor_fault": "dropout",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7334,
+          "noise_score_after": 0.0874,
+          "noise_score_before": 0.3279,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6876,
+          "telemetry_health": 0.975
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_high_jitter_normal_none_seed_5"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "jitter",
+        "noise_level": "high",
+        "scenario_id": "spike_noise_high_jitter_normal_none_seed_5",
+        "seed": 5,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6273,
+          "noise_score_after": 0.0916,
+          "noise_score_before": 0.2457,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6186,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_medium_stable_normal_none_seed_6"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "muddy_medium_stable_normal_none_seed_6",
+        "seed": 6,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6847,
+          "noise_score_after": 0.0999,
+          "noise_score_before": 0.3168,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6559,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_7"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_7",
+        "seed": 7,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7208,
+          "noise_score_after": 0.0801,
+          "noise_score_before": 0.2867,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6794,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_8"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_8",
+        "seed": 8,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6848,
+          "noise_score_after": 0.0748,
+          "noise_score_before": 0.2372,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.656,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_high_stable_normal_none_seed_9"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "smooth_high_stable_normal_none_seed_9",
+        "seed": 9,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6896,
+          "noise_score_after": 0.0978,
+          "noise_score_before": 0.3152,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6591,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_high_stable_normal_none_seed_10"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "muddy_high_stable_normal_none_seed_10",
+        "seed": 10,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7461,
+          "noise_score_after": 0.1001,
+          "noise_score_before": 0.3944,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6958,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_high_stable_normal_none_seed_11"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "rocky_high_stable_normal_none_seed_11",
+        "seed": 11,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7458,
+          "noise_score_after": 0.0895,
+          "noise_score_before": 0.3522,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6957,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_high_stable_normal_none_seed_12"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "spike_noise_high_stable_normal_none_seed_12",
+        "seed": 12,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.3751,
+          "noise_score_after": 0.0604,
+          "noise_score_before": 0.0966,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.4547,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_low_stable_normal_none_seed_13"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "smooth_low_stable_normal_none_seed_13",
+        "seed": 13,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6303,
+          "noise_score_after": 0.0755,
+          "noise_score_before": 0.2041,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6205,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_low_stable_normal_none_seed_14"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "muddy_low_stable_normal_none_seed_14",
+        "seed": 14,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5925,
+          "noise_score_after": 0.1007,
+          "noise_score_before": 0.2472,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.596,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_low_stable_normal_none_seed_15"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "rocky_low_stable_normal_none_seed_15",
+        "seed": 15,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6775,
+          "noise_score_after": 0.08,
+          "noise_score_before": 0.248,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6513,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_16"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_16",
+        "seed": 16,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5869,
+          "noise_score_after": 0.0658,
+          "noise_score_before": 0.1592,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.5924,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_17"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_17",
+        "seed": 17,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6398,
+          "noise_score_after": 0.096,
+          "noise_score_before": 0.2664,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6267,
+          "telemetry_health": 0.975
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_medium_jitter_normal_none_seed_18"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "jitter",
+        "noise_level": "medium",
+        "scenario_id": "muddy_medium_jitter_normal_none_seed_18",
+        "seed": 18,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6914,
+          "noise_score_after": 0.0996,
+          "noise_score_before": 0.3228,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6602,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_19"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_19",
+        "seed": 19,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6888,
+          "noise_score_after": 0.0807,
+          "noise_score_before": 0.2592,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6586,
+          "telemetry_health": 0.98
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_medium_stable_low_none_seed_20"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "low",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "spike_noise_medium_stable_low_none_seed_20",
+        "seed": 20,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6668,
+          "noise_score_after": 0.0747,
+          "noise_score_before": 0.2242,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6443,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_high_stable_normal_none_seed_21"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "smooth_high_stable_normal_none_seed_21",
+        "seed": 21,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7201,
+          "noise_score_after": 0.0891,
+          "noise_score_before": 0.3182,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6789,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_high_stable_normal_none_seed_22"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "muddy_high_stable_normal_none_seed_22",
+        "seed": 22,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7062,
+          "noise_score_after": 0.1068,
+          "noise_score_before": 0.3636,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6699,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_high_stable_normal_none_seed_23"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "rocky_high_stable_normal_none_seed_23",
+        "seed": 23,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.743,
+          "noise_score_after": 0.0885,
+          "noise_score_before": 0.3443,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6938,
+          "telemetry_health": 0.955
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_high_stable_normal_dropout_seed_24"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "spike_noise_high_stable_normal_dropout_seed_24",
+        "seed": 24,
+        "sensor_fault": "dropout",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.4432,
+          "noise_score_after": 0.0608,
+          "noise_score_before": 0.1092,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.4989,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_low_stable_normal_none_seed_25"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "smooth_low_stable_normal_none_seed_25",
+        "seed": 25,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6129,
+          "noise_score_after": 0.0855,
+          "noise_score_before": 0.2208,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6092,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_low_stable_normal_none_seed_26"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "muddy_low_stable_normal_none_seed_26",
+        "seed": 26,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.682,
+          "noise_score_after": 0.0901,
+          "noise_score_before": 0.2833,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6541,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_low_stable_normal_none_seed_27"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "rocky_low_stable_normal_none_seed_27",
+        "seed": 27,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6675,
+          "noise_score_after": 0.0777,
+          "noise_score_before": 0.2338,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6447,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_28"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_28",
+        "seed": 28,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5606,
+          "noise_score_after": 0.0672,
+          "noise_score_before": 0.1529,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.5753,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_29"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_29",
+        "seed": 29,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6493,
+          "noise_score_after": 0.0834,
+          "noise_score_before": 0.2378,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6329,
+          "telemetry_health": 0.95
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_medium_high_loss_normal_none_seed_30"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "high_loss",
+        "noise_level": "medium",
+        "scenario_id": "muddy_medium_high_loss_normal_none_seed_30",
+        "seed": 30,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6821,
+          "noise_score_after": 0.1054,
+          "noise_score_before": 0.3314,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6542,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_31"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_31",
+        "seed": 31,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7115,
+          "noise_score_after": 0.082,
+          "noise_score_before": 0.2842,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6733,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_32"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_32",
+        "seed": 32,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.672,
+          "noise_score_after": 0.0729,
+          "noise_score_before": 0.2224,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6477,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_high_stable_normal_none_seed_33"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "smooth_high_stable_normal_none_seed_33",
+        "seed": 33,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6747,
+          "noise_score_after": 0.0995,
+          "noise_score_before": 0.3058,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6494,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_high_stable_normal_none_seed_34"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "muddy_high_stable_normal_none_seed_34",
+        "seed": 34,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7271,
+          "noise_score_after": 0.1055,
+          "noise_score_before": 0.3866,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6834,
+          "telemetry_health": 0.975
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_high_jitter_normal_none_seed_35"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "jitter",
+        "noise_level": "high",
+        "scenario_id": "rocky_high_jitter_normal_none_seed_35",
+        "seed": 35,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7512,
+          "noise_score_after": 0.0885,
+          "noise_score_before": 0.3557,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6992,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_high_stable_normal_none_seed_36"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "spike_noise_high_stable_normal_none_seed_36",
+        "seed": 36,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.3896,
+          "noise_score_after": 0.063,
+          "noise_score_before": 0.1031,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.4641,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_low_stable_normal_none_seed_37"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "smooth_low_stable_normal_none_seed_37",
+        "seed": 37,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6119,
+          "noise_score_after": 0.0791,
+          "noise_score_before": 0.2038,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6086,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_low_stable_normal_none_seed_38"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "muddy_low_stable_normal_none_seed_38",
+        "seed": 38,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6699,
+          "noise_score_after": 0.0925,
+          "noise_score_before": 0.2802,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6463,
+          "telemetry_health": 0.98
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_low_stable_low_none_seed_39"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "low",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "rocky_low_stable_low_none_seed_39",
+        "seed": 39,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6853,
+          "noise_score_after": 0.0782,
+          "noise_score_before": 0.2484,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6563,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_40"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_40",
+        "seed": 40,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5698,
+          "noise_score_after": 0.0662,
+          "noise_score_before": 0.1539,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.5812,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_41"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_41",
+        "seed": 41,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.638,
+          "noise_score_after": 0.101,
+          "noise_score_before": 0.2791,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6255,
+          "telemetry_health": 0.955
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_medium_stable_critical_none_seed_42"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "critical",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "muddy_medium_stable_critical_none_seed_42",
+        "seed": 42,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.709,
+          "noise_score_after": 0.0953,
+          "noise_score_before": 0.3275,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6717,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_43"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_43",
+        "seed": 43,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.724,
+          "noise_score_after": 0.083,
+          "noise_score_before": 0.3008,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6815,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_44"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_44",
+        "seed": 44,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6738,
+          "noise_score_after": 0.0772,
+          "noise_score_before": 0.2365,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6488,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_high_stable_normal_none_seed_45"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "smooth_high_stable_normal_none_seed_45",
+        "seed": 45,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6933,
+          "noise_score_after": 0.11,
+          "noise_score_before": 0.3587,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6615,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_high_stable_normal_none_seed_46"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "muddy_high_stable_normal_none_seed_46",
+        "seed": 46,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7011,
+          "noise_score_after": 0.1071,
+          "noise_score_before": 0.3582,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6666,
+          "telemetry_health": 0.955
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_high_stable_normal_dropout_seed_47"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "rocky_high_stable_normal_dropout_seed_47",
+        "seed": 47,
+        "sensor_fault": "dropout",
+        "terrain": "rocky"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7285,
+          "noise_score_after": 0.0883,
+          "noise_score_before": 0.3252,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6844,
+          "telemetry_health": 0.975
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_high_stable_normal_stuck_value_seed_48"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "spike_noise_high_stable_normal_stuck_value_seed_48",
+        "seed": 48,
+        "sensor_fault": "stuck_value",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.3966,
+          "noise_score_after": 0.0613,
+          "noise_score_before": 0.1016,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.4686,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_low_stable_normal_none_seed_49"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "smooth_low_stable_normal_none_seed_49",
+        "seed": 49,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      }
+    },
+    {
+      "result": {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5842,
+          "noise_score_after": 0.0871,
+          "noise_score_before": 0.2094,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.5906,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_low_stable_normal_none_seed_50"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "muddy_low_stable_normal_none_seed_50",
+        "seed": 50,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      }
+    },
+    {
+      "result": {
+        "accepted": false,
+        "failed_invariants": [
+          {
+            "critical": false,
+            "name": "telemetry_health_above_floor",
+            "reason": "Telemetry health 0.8700 fell below floor 0.9500."
+          }
+        ],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5804,
+          "noise_score_after": 0.2518,
+          "noise_score_before": 0.6001,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.5881,
+          "telemetry_health": 0.87
+        },
+        "reason": "Telemetry health 0.8700 fell below floor 0.9500.",
+        "scenario_id": "adaptive_spike_noise_medium_high_loss_critical_dropout_seed_51"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 1.5,
+        "battery_state": "critical",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "high_loss",
+        "noise_level": "medium",
+        "scenario_id": "adaptive_spike_noise_medium_high_loss_critical_dropout_seed_51",
+        "seed": 51,
+        "sensor_fault": "dropout",
+        "terrain": "spike_noise"
+      }
+    },
+    {
+      "result": {
+        "accepted": false,
+        "failed_invariants": [
+          {
+            "critical": false,
+            "name": "telemetry_health_above_floor",
+            "reason": "Telemetry health 0.9100 fell below floor 0.9500."
+          }
+        ],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6446,
+          "noise_score_after": 0.1966,
+          "noise_score_before": 0.5532,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6298,
+          "telemetry_health": 0.91
+        },
+        "reason": "Telemetry health 0.9100 fell below floor 0.9500.",
+        "scenario_id": "adaptive_spike_noise_medium_high_loss_critical_none_seed_52"
+      },
+      "scenario": {
+        "baseline_sample_rate_hz": 1.5,
+        "battery_state": "critical",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "high_loss",
+        "noise_level": "medium",
+        "scenario_id": "adaptive_spike_noise_medium_high_loss_critical_none_seed_52",
+        "seed": 52,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    }
+  ],
+  "setting_suggestions": {
+    "confidence": 0.9,
+    "mutually_exclusive_options": [
+      {
+        "changes": {
+          "sampling_rate_hz": 1
+        },
+        "description": "Lower sample rate to reduce processing and telemetry volume.",
+        "risk_delta_preview": {
+          "estimated_pass_rate": 0.9617,
+          "estimated_risk_score": 0.0198,
+          "pass_rate_delta": 0.0387,
+          "risk_score_delta": -0.06
+        },
+        "source": "heuristic"
+      },
+      {
+        "changes": {
+          "filter": {
+            "type": "median",
+            "window_size": 7
+          }
+        },
+        "description": "Increase median window gradually for bursty network and sensor faults.",
+        "risk_delta_preview": {
+          "estimated_pass_rate": 0.9431,
+          "estimated_risk_score": 0.0498,
+          "pass_rate_delta": 0.02,
+          "risk_score_delta": -0.03
+        },
+        "source": "heuristic"
+      },
+      {
+        "changes": {
+          "telemetry_collection": {
+            "aggregation_window_seconds": 11
+          }
+        },
+        "description": "Increase aggregation window to lower publish frequency under load.",
+        "risk_delta_preview": {
+          "estimated_pass_rate": 0.9281,
+          "estimated_risk_score": 0.0648,
+          "pass_rate_delta": 0.005,
+          "risk_score_delta": -0.015
+        },
+        "source": "heuristic"
+      }
+    ],
+    "reason": "Blocked run can improve by trying one option at a time, then re-running verification. Current risk=0.08, pass_rate=0.92.",
+    "risk_delta_preview": {
+      "critical_failures": [],
+      "estimated_pass_rate": 0.95,
+      "estimated_risk_score": 0.07984615384615384,
+      "includes_ai": false,
+      "pass_rate_delta": 0.021233333333333337,
+      "risk_score_delta": -0.034999999999999996
+    }
+  },
+  "verification": {
+    "adaptive_cycles": 1,
+    "adaptive_metadata": [
+      {
+        "cycle": 1,
+        "failed_in_cycle": 2,
+        "generated_candidates": 2,
+        "passed_in_cycle": 0,
+        "seed_range": [
+          51,
+          71
+        ],
+        "target_invariants": []
+      }
+    ],
+    "candidate_scenarios": [
+      "adaptive_spike_noise_medium_high_loss_critical_dropout_seed_51",
+      "adaptive_spike_noise_medium_high_loss_critical_none_seed_52"
+    ],
+    "case_results": [
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.746,
+          "noise_score_after": 0.0823,
+          "noise_score_before": 0.3241,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6958,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_high_stable_normal_none_seed_1"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7461,
+          "noise_score_after": 0.0975,
+          "noise_score_before": 0.3841,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6958,
+          "telemetry_health": 0.975
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_high_jitter_normal_none_seed_2"
+      },
+      {
+        "accepted": false,
+        "failed_invariants": [
+          {
+            "critical": false,
+            "name": "telemetry_health_above_floor",
+            "reason": "Telemetry health 0.9350 fell below floor 0.9500."
+          }
+        ],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.674,
+          "noise_score_after": 0.0804,
+          "noise_score_before": 0.2467,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.649,
+          "telemetry_health": 0.935
+        },
+        "reason": "Telemetry health 0.9350 fell below floor 0.9500.",
+        "scenario_id": "muddy_medium_high_loss_low_none_seed_3"
+      },
+      {
+        "accepted": false,
+        "failed_invariants": [
+          {
+            "critical": false,
+            "name": "telemetry_health_above_floor",
+            "reason": "Telemetry health 0.9400 fell below floor 0.9500."
+          }
+        ],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.3826,
+          "noise_score_after": 0.0642,
+          "noise_score_before": 0.1039,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.4595,
+          "telemetry_health": 0.94
+        },
+        "reason": "Telemetry health 0.9400 fell below floor 0.9500.",
+        "scenario_id": "smooth_low_stable_low_dropout_seed_4"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7334,
+          "noise_score_after": 0.0874,
+          "noise_score_before": 0.3279,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6876,
+          "telemetry_health": 0.975
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_high_jitter_normal_none_seed_5"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6273,
+          "noise_score_after": 0.0916,
+          "noise_score_before": 0.2457,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6186,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_medium_stable_normal_none_seed_6"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6847,
+          "noise_score_after": 0.0999,
+          "noise_score_before": 0.3168,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6559,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_7"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7208,
+          "noise_score_after": 0.0801,
+          "noise_score_before": 0.2867,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6794,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_8"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6848,
+          "noise_score_after": 0.0748,
+          "noise_score_before": 0.2372,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.656,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_high_stable_normal_none_seed_9"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6896,
+          "noise_score_after": 0.0978,
+          "noise_score_before": 0.3152,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6591,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_high_stable_normal_none_seed_10"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7461,
+          "noise_score_after": 0.1001,
+          "noise_score_before": 0.3944,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6958,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_high_stable_normal_none_seed_11"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7458,
+          "noise_score_after": 0.0895,
+          "noise_score_before": 0.3522,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6957,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_high_stable_normal_none_seed_12"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.3751,
+          "noise_score_after": 0.0604,
+          "noise_score_before": 0.0966,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.4547,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_low_stable_normal_none_seed_13"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6303,
+          "noise_score_after": 0.0755,
+          "noise_score_before": 0.2041,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6205,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_low_stable_normal_none_seed_14"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5925,
+          "noise_score_after": 0.1007,
+          "noise_score_before": 0.2472,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.596,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_low_stable_normal_none_seed_15"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6775,
+          "noise_score_after": 0.08,
+          "noise_score_before": 0.248,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6513,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_16"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5869,
+          "noise_score_after": 0.0658,
+          "noise_score_before": 0.1592,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.5924,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_17"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6398,
+          "noise_score_after": 0.096,
+          "noise_score_before": 0.2664,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6267,
+          "telemetry_health": 0.975
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_medium_jitter_normal_none_seed_18"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6914,
+          "noise_score_after": 0.0996,
+          "noise_score_before": 0.3228,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6602,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_19"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6888,
+          "noise_score_after": 0.0807,
+          "noise_score_before": 0.2592,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6586,
+          "telemetry_health": 0.98
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_medium_stable_low_none_seed_20"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6668,
+          "noise_score_after": 0.0747,
+          "noise_score_before": 0.2242,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6443,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_high_stable_normal_none_seed_21"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 10.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7201,
+          "noise_score_after": 0.0891,
+          "noise_score_before": 0.3182,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6789,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_high_stable_normal_none_seed_22"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7062,
+          "noise_score_after": 0.1068,
+          "noise_score_before": 0.3636,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6699,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_high_stable_normal_none_seed_23"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.743,
+          "noise_score_after": 0.0885,
+          "noise_score_before": 0.3443,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6938,
+          "telemetry_health": 0.955
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_high_stable_normal_dropout_seed_24"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.4432,
+          "noise_score_after": 0.0608,
+          "noise_score_before": 0.1092,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.4989,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_low_stable_normal_none_seed_25"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6129,
+          "noise_score_after": 0.0855,
+          "noise_score_before": 0.2208,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6092,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_low_stable_normal_none_seed_26"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.682,
+          "noise_score_after": 0.0901,
+          "noise_score_before": 0.2833,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6541,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_low_stable_normal_none_seed_27"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6675,
+          "noise_score_after": 0.0777,
+          "noise_score_before": 0.2338,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6447,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_28"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5606,
+          "noise_score_after": 0.0672,
+          "noise_score_before": 0.1529,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.5753,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_29"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6493,
+          "noise_score_after": 0.0834,
+          "noise_score_before": 0.2378,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6329,
+          "telemetry_health": 0.95
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_medium_high_loss_normal_none_seed_30"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6821,
+          "noise_score_after": 0.1054,
+          "noise_score_before": 0.3314,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6542,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_31"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7115,
+          "noise_score_after": 0.082,
+          "noise_score_before": 0.2842,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6733,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_32"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.672,
+          "noise_score_after": 0.0729,
+          "noise_score_before": 0.2224,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6477,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_high_stable_normal_none_seed_33"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6747,
+          "noise_score_after": 0.0995,
+          "noise_score_before": 0.3058,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6494,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_high_stable_normal_none_seed_34"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7271,
+          "noise_score_after": 0.1055,
+          "noise_score_before": 0.3866,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6834,
+          "telemetry_health": 0.975
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_high_jitter_normal_none_seed_35"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7512,
+          "noise_score_after": 0.0885,
+          "noise_score_before": 0.3557,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6992,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_high_stable_normal_none_seed_36"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.3896,
+          "noise_score_after": 0.063,
+          "noise_score_before": 0.1031,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.4641,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_low_stable_normal_none_seed_37"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6119,
+          "noise_score_after": 0.0791,
+          "noise_score_before": 0.2038,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6086,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_low_stable_normal_none_seed_38"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6699,
+          "noise_score_after": 0.0925,
+          "noise_score_before": 0.2802,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6463,
+          "telemetry_health": 0.98
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_low_stable_low_none_seed_39"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6853,
+          "noise_score_after": 0.0782,
+          "noise_score_before": 0.2484,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6563,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_40"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5698,
+          "noise_score_after": 0.0662,
+          "noise_score_before": 0.1539,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.5812,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_41"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.638,
+          "noise_score_after": 0.101,
+          "noise_score_before": 0.2791,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6255,
+          "telemetry_health": 0.955
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_medium_stable_critical_none_seed_42"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.709,
+          "noise_score_after": 0.0953,
+          "noise_score_before": 0.3275,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6717,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_43"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 100.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.724,
+          "noise_score_after": 0.083,
+          "noise_score_before": 0.3008,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6815,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_44"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6738,
+          "noise_score_after": 0.0772,
+          "noise_score_before": 0.2365,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6488,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_high_stable_normal_none_seed_45"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6933,
+          "noise_score_after": 0.11,
+          "noise_score_before": 0.3587,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6615,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_high_stable_normal_none_seed_46"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7011,
+          "noise_score_after": 0.1071,
+          "noise_score_before": 0.3582,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6666,
+          "telemetry_health": 0.955
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "rocky_high_stable_normal_dropout_seed_47"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.7285,
+          "noise_score_after": 0.0883,
+          "noise_score_before": 0.3252,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6844,
+          "telemetry_health": 0.975
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "spike_noise_high_stable_normal_stuck_value_seed_48"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.3966,
+          "noise_score_after": 0.0613,
+          "noise_score_before": 0.1016,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.4686,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "smooth_low_stable_normal_none_seed_49"
+      },
+      {
+        "accepted": true,
+        "failed_invariants": [],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 1.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5842,
+          "noise_score_after": 0.0871,
+          "noise_score_before": 0.2094,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.5906,
+          "telemetry_health": 0.995
+        },
+        "reason": "Safety invariants passed.",
+        "scenario_id": "muddy_low_stable_normal_none_seed_50"
+      },
+      {
+        "accepted": false,
+        "failed_invariants": [
+          {
+            "critical": false,
+            "name": "telemetry_health_above_floor",
+            "reason": "Telemetry health 0.8700 fell below floor 0.9500."
+          }
+        ],
+        "metrics": {
+          "accepted": false,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.5804,
+          "noise_score_after": 0.2518,
+          "noise_score_before": 0.6001,
+          "payload_limit_kbps": 16.0,
+          "reason": "Candidate score was below the acceptance threshold.",
+          "score": 0.5881,
+          "telemetry_health": 0.87
+        },
+        "reason": "Telemetry health 0.8700 fell below floor 0.9500.",
+        "scenario_id": "adaptive_spike_noise_medium_high_loss_critical_dropout_seed_51"
+      },
+      {
+        "accepted": false,
+        "failed_invariants": [
+          {
+            "critical": false,
+            "name": "telemetry_health_above_floor",
+            "reason": "Telemetry health 0.9100 fell below floor 0.9500."
+          }
+        ],
+        "metrics": {
+          "accepted": true,
+          "bandwidth_after_kbps": 0.8448,
+          "bandwidth_before_kbps": 7.68,
+          "bandwidth_reduction_ratio": 0.89,
+          "estimated_payload_kbps": 0.8448,
+          "fleet_size": 50.0,
+          "latency_penalty_ms": 200.0,
+          "noise_reduction_ratio": 0.6446,
+          "noise_score_after": 0.1966,
+          "noise_score_before": 0.5532,
+          "payload_limit_kbps": 16.0,
+          "reason": "Noise improved within latency and payload limits.",
+          "score": 0.6298,
+          "telemetry_health": 0.91
+        },
+        "reason": "Telemetry health 0.9100 fell below floor 0.9500.",
+        "scenario_id": "adaptive_spike_noise_medium_high_loss_critical_none_seed_52"
+      }
+    ],
+    "critical_failures": [],
+    "decision": "blocked",
+    "executed_scenarios": [
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "muddy_high_stable_normal_none_seed_1",
+        "seed": 1,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "jitter",
+        "noise_level": "high",
+        "scenario_id": "rocky_high_jitter_normal_none_seed_2",
+        "seed": 2,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "low",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "high_loss",
+        "noise_level": "medium",
+        "scenario_id": "muddy_medium_high_loss_low_none_seed_3",
+        "seed": 3,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "low",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "smooth_low_stable_low_dropout_seed_4",
+        "seed": 4,
+        "sensor_fault": "dropout",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "jitter",
+        "noise_level": "high",
+        "scenario_id": "spike_noise_high_jitter_normal_none_seed_5",
+        "seed": 5,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "muddy_medium_stable_normal_none_seed_6",
+        "seed": 6,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_7",
+        "seed": 7,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_8",
+        "seed": 8,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "smooth_high_stable_normal_none_seed_9",
+        "seed": 9,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "muddy_high_stable_normal_none_seed_10",
+        "seed": 10,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "rocky_high_stable_normal_none_seed_11",
+        "seed": 11,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "spike_noise_high_stable_normal_none_seed_12",
+        "seed": 12,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "smooth_low_stable_normal_none_seed_13",
+        "seed": 13,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "muddy_low_stable_normal_none_seed_14",
+        "seed": 14,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "rocky_low_stable_normal_none_seed_15",
+        "seed": 15,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_16",
+        "seed": 16,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_17",
+        "seed": 17,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "jitter",
+        "noise_level": "medium",
+        "scenario_id": "muddy_medium_jitter_normal_none_seed_18",
+        "seed": 18,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_19",
+        "seed": 19,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "low",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "spike_noise_medium_stable_low_none_seed_20",
+        "seed": 20,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "smooth_high_stable_normal_none_seed_21",
+        "seed": 21,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 10,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "muddy_high_stable_normal_none_seed_22",
+        "seed": 22,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "rocky_high_stable_normal_none_seed_23",
+        "seed": 23,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "spike_noise_high_stable_normal_dropout_seed_24",
+        "seed": 24,
+        "sensor_fault": "dropout",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "smooth_low_stable_normal_none_seed_25",
+        "seed": 25,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "muddy_low_stable_normal_none_seed_26",
+        "seed": 26,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "rocky_low_stable_normal_none_seed_27",
+        "seed": 27,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_28",
+        "seed": 28,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_29",
+        "seed": 29,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "high_loss",
+        "noise_level": "medium",
+        "scenario_id": "muddy_medium_high_loss_normal_none_seed_30",
+        "seed": 30,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_31",
+        "seed": 31,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_32",
+        "seed": 32,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "smooth_high_stable_normal_none_seed_33",
+        "seed": 33,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "muddy_high_stable_normal_none_seed_34",
+        "seed": 34,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "jitter",
+        "noise_level": "high",
+        "scenario_id": "rocky_high_jitter_normal_none_seed_35",
+        "seed": 35,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "spike_noise_high_stable_normal_none_seed_36",
+        "seed": 36,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "smooth_low_stable_normal_none_seed_37",
+        "seed": 37,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "muddy_low_stable_normal_none_seed_38",
+        "seed": 38,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "low",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "rocky_low_stable_low_none_seed_39",
+        "seed": 39,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "spike_noise_low_stable_normal_none_seed_40",
+        "seed": 40,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "smooth_medium_stable_normal_none_seed_41",
+        "seed": 41,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "critical",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "muddy_medium_stable_critical_none_seed_42",
+        "seed": 42,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "rocky_medium_stable_normal_none_seed_43",
+        "seed": 43,
+        "sensor_fault": "none",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 100,
+        "network_profile": "stable",
+        "noise_level": "medium",
+        "scenario_id": "spike_noise_medium_stable_normal_none_seed_44",
+        "seed": 44,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "smooth_high_stable_normal_none_seed_45",
+        "seed": 45,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "muddy_high_stable_normal_none_seed_46",
+        "seed": 46,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "rocky_high_stable_normal_dropout_seed_47",
+        "seed": 47,
+        "sensor_fault": "dropout",
+        "terrain": "rocky"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "high",
+        "scenario_id": "spike_noise_high_stable_normal_stuck_value_seed_48",
+        "seed": 48,
+        "sensor_fault": "stuck_value",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "smooth_low_stable_normal_none_seed_49",
+        "seed": 49,
+        "sensor_fault": "none",
+        "terrain": "smooth"
+      },
+      {
+        "baseline_sample_rate_hz": 10,
+        "battery_state": "normal",
+        "duration_seconds": 30,
+        "fleet_size": 1,
+        "network_profile": "stable",
+        "noise_level": "low",
+        "scenario_id": "muddy_low_stable_normal_none_seed_50",
+        "seed": 50,
+        "sensor_fault": "none",
+        "terrain": "muddy"
+      },
+      {
+        "baseline_sample_rate_hz": 1.5,
+        "battery_state": "critical",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "high_loss",
+        "noise_level": "medium",
+        "scenario_id": "adaptive_spike_noise_medium_high_loss_critical_dropout_seed_51",
+        "seed": 51,
+        "sensor_fault": "dropout",
+        "terrain": "spike_noise"
+      },
+      {
+        "baseline_sample_rate_hz": 1.5,
+        "battery_state": "critical",
+        "duration_seconds": 30,
+        "fleet_size": 50,
+        "network_profile": "high_loss",
+        "noise_level": "medium",
+        "scenario_id": "adaptive_spike_noise_medium_high_loss_critical_none_seed_52",
+        "seed": 52,
+        "sensor_fault": "none",
+        "terrain": "spike_noise"
+      }
+    ],
+    "failed_count": 4,
+    "failed_scenarios": [
+      "muddy_medium_high_loss_low_none_seed_3",
+      "smooth_low_stable_low_dropout_seed_4",
+      "adaptive_spike_noise_medium_high_loss_critical_dropout_seed_51",
+      "adaptive_spike_noise_medium_high_loss_critical_none_seed_52"
+    ],
+    "pass_rate": 0.9231,
+    "passed_count": 48,
+    "risk_score": 0.0798,
+    "scenario_count": 52,
+    "verification_status": "failed",
+    "worst_case": {
+      "accepted": false,
+      "scenario_id": "adaptive_spike_noise_medium_high_loss_critical_dropout_seed_51",
+      "score": 0.5881,
+      "telemetry_health": 0.87
+    }
+  }
+}
