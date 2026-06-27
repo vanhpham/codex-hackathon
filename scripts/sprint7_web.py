@@ -752,7 +752,7 @@ INDEX_HTML = """<!doctype html>
                 </select>
               </label>
               <label>LLM tuning
-                <input id="operatorLLMSuggestions" type="checkbox" checked />
+                <input id="operatorLLMSuggestions" type="checkbox" checked disabled title="LLM suggestions are always enabled for verification trace tuning." />
               </label>
             </div>
             <div class="toolbar">
@@ -1205,9 +1205,14 @@ INDEX_HTML = """<!doctype html>
           : "No parsed parameters.";
         document.getElementById("operatorResult").textContent = JSON.stringify(result, null, 2);
         const decision = result.ready_payload ? "ready_for_canary" : "blocked";
+        const blockedSummary = result.blocked_reason ? result.blocked_reason.summary : "";
         setBadgeState("operatorState", decision === "ready_for_canary" ? "ready" : "blocked", decision);
         setBadgeState("pipelineState", "state-idle", "done");
-        document.getElementById("operatorFlowSummary").textContent = decision === "ready_for_canary" ? "verified and ready" : "blocked by harness";
+        document.getElementById("operatorFlowSummary").textContent = decision === "ready_for_canary"
+          ? "verified and ready"
+          : blockedSummary
+          ? `blocked by harness: ${blockedSummary}`
+          : "blocked by harness";
         renderOperatorPipeline(result.pipeline_steps || result.pipeline?.steps || []);
         if (latestReadyPayload) {
           document.getElementById("payload").value = JSON.stringify(latestReadyPayload, null, 2);
@@ -1422,11 +1427,12 @@ class FleetController:
         adaptive_rounds: int = 1,
         adaptive_budget: int = 20,
         suggest_settings: bool = True,
-        llm_suggestions: bool = False,
+        llm_suggestions: bool = True,
     ) -> dict[str, Any]:
         prompt = (prompt or DEFAULT_OPERATOR_PROMPT).strip()
         scenario_count = max(5, min(500, int(scenario_count)))
         workers = max(1, min(16, int(workers)))
+        blocked_reason: dict[str, Any] | None = None
         pipeline_steps: list[dict[str, Any]] = []
 
         self._append_event(
@@ -1478,10 +1484,12 @@ class FleetController:
         pipeline_steps[-1]["status"] = "done"
 
         raw_plan_json = harness.raw_plan_json
+        parsed_plan_obj: OptimizationPlan | None = None
         parsed_plan: dict[str, Any] | None = None
         if harness.plan is not None:
             try:
-                parsed_plan = asdict(OptimizationPlan.from_dict(harness.plan))
+                parsed_plan_obj = OptimizationPlan.from_dict(harness.plan)
+                parsed_plan = asdict(parsed_plan_obj)
                 self._add_operator_step(
                     pipeline_steps,
                     "parse_and_gate",
@@ -1514,6 +1522,35 @@ class FleetController:
         }
 
         if harness.deployment_decision != "ready_for_canary" or harness.plan is None:
+            if harness.validation_error:
+                blocked_reason = {
+                    "phase": "harness_schema",
+                    "summary": f"plan validation failed: {harness.validation_error}",
+                    "status": harness.status,
+                    "deployment_decision": harness.deployment_decision,
+                    "plan_status": harness.plan_status,
+                    "simulation_status": harness.simulation_status,
+                    "validation_error": harness.validation_error,
+                }
+            elif harness.simulation_status == "rejected":
+                blocked_reason = {
+                    "phase": "harness_simulation",
+                    "summary": f"simulation rejected: {harness.simulation_result.get('reason', 'Unknown')}",
+                    "status": harness.status,
+                    "deployment_decision": harness.deployment_decision,
+                    "plan_status": harness.plan_status,
+                    "simulation_status": harness.simulation_status,
+                    "simulation_reason": harness.simulation_result.get("reason"),
+                }
+            else:
+                blocked_reason = {
+                    "phase": "harness_gate",
+                    "summary": f"harness gate blocked with deployment_decision={harness.deployment_decision}.",
+                    "status": harness.status,
+                    "deployment_decision": harness.deployment_decision,
+                    "plan_status": harness.plan_status,
+                    "simulation_status": harness.simulation_status,
+                }
             self._add_operator_step(
                 pipeline_steps,
                 "verification_matrix",
@@ -1523,10 +1560,33 @@ class FleetController:
             )
             payload["pipeline"] = {"steps": pipeline_steps}
             payload["ready_payload"] = None
+            payload["blocked_reason"] = blocked_reason
             self._record_operator_result(payload, "operator_blocked", "Operator plan blocked before verification.")
             return payload
 
-        plan = OptimizationPlan.from_dict(harness.plan)
+        if parsed_plan_obj is None:
+            blocked_reason = {
+                "phase": "schema_parse",
+                "summary": "schema accepted but typed conversion failed after plan generation.",
+                "status": harness.status,
+                "deployment_decision": harness.deployment_decision,
+                "plan_status": harness.plan_status,
+                "simulation_status": harness.simulation_status,
+            }
+            self._add_operator_step(
+                pipeline_steps,
+                "verification_matrix",
+                "skipped",
+                "Verification skipped due parse failure.",
+                {"plan_status": harness.plan_status},
+            )
+            payload["pipeline"] = {"steps": pipeline_steps}
+            payload["ready_payload"] = None
+            payload["blocked_reason"] = blocked_reason
+            self._record_operator_result(payload, "operator_blocked", "Operator plan blocked at schema conversion.")
+            return payload
+
+        plan = parsed_plan_obj
         scenarios = generate_scenario_matrix(count=scenario_count, seed_start=1)
         self._add_operator_step(
             pipeline_steps,
@@ -1638,6 +1698,20 @@ class FleetController:
                 "Decision ready_for_canary; payload prepared for deploy controls.",
             )
         else:
+            blocked_reason = {
+                "phase": "verification",
+                "summary": (
+                    f"decision={report.decision}; pass_rate={report.pass_rate:.3f}, "
+                    f"risk_score={report.risk_score:.3f}, failed_cases={report.failed_count}"
+                ),
+                "decision": report.decision,
+                "pass_rate": report.pass_rate,
+                "risk_score": report.risk_score,
+                "failed_count": report.failed_count,
+                "critical_failures": list(report.critical_failures),
+                "failed_scenarios": list(report.failed_scenarios)[:5],
+                "worst_case": report.worst_case,
+            }
             self._add_operator_step(
                 pipeline_steps,
                 "final_decision",
@@ -1656,6 +1730,7 @@ class FleetController:
                 "ready_payload": ready_payload,
                 "pipeline": {"steps": pipeline_steps},
                 "pipeline_steps": pipeline_steps,
+                "blocked_reason": blocked_reason,
             }
         )
         event_type = "operator_ready" if ready_payload else "operator_blocked"
@@ -1890,7 +1965,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     adaptive_rounds=int(request.get("adaptive_rounds", 1)),
                     adaptive_budget=int(request.get("adaptive_budget", 20)),
                     suggest_settings=bool(request.get("suggest_settings", True)),
-                    llm_suggestions=bool(request.get("llm_suggestions", False)),
+                    llm_suggestions=bool(request.get("llm_suggestions", True)),
                 )
                 self._send_json(result)
             except (KeyError, TypeError, ValueError) as exc:
