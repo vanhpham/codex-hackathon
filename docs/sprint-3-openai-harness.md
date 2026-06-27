@@ -1,27 +1,23 @@
 # Sprint 3: OpenAI Structured Harness
 
-Sprint 3 connects the schema and simulator from Sprints 1-2 to an OpenAI model call. The model is allowed to propose an `OptimizationPlan`; the harness still owns validation, simulation, and the final deployment decision.
+Sprint 3 connects OpenAI Structured Outputs to the local harness. The model proposes a typed `OptimizationPlan`; the harness validates and simulates it.
 
-The Sprint 3 thesis:
-
-```text
-The model emits a constrained plan.
-The harness validates and simulates before any OTA action exists.
-```
+This sprint is still not a deployment sprint. It produces a safe decision object that Sprint 4 can verify more deeply.
 
 ## Sprint Goal
 
-Build a local harness path:
+Build this local path:
 
 ```text
 Engineer prompt
-  -> OpenAI Responses API structured output
-  -> OptimizationPlan validation
-  -> local simulator
-  -> ready_for_canary or rejected decision
+  -> OpenAI Responses API
+  -> structured OptimizationPlan
+  -> schema and policy validation
+  -> baseline simulator
+  -> ready_for_verification or blocked
 ```
 
-Sprint 3 does not deploy to MQTT, edge nodes, or Docker. It only prepares a safe decision object that Sprint 4 can consume.
+The current code returns `ready_for_canary` for accepted baseline simulation. After the Sprint 4 pivot, that status should be treated as "ready for deeper verification" before any real runtime deployment.
 
 ## Runtime Contract
 
@@ -32,39 +28,49 @@ OPENAI_API_KEY=...
 OPENAI_MODEL=gpt-5.5
 ```
 
-`OPENAI_MODEL` should remain configurable so the demo can use the latest available high-capability model without code changes.
-
 Keep real keys in local `.env`. Do not put keys in `.env.example`.
-
-## Harness Input
-
-```json
-{
-  "prompt": "Xe dang vao vung bun lay, rung lac manh. Hay giam sample rate xuong 2Hz, them median filter cho gia toc, va chuyen log level sang WARNING.",
-  "mode": "safe"
-}
-```
 
 ## Model Output Boundary
 
-The model may return only a structured `OptimizationPlan`.
+The model may return only a structured control plan.
 
 It may not:
 
-- call deployment functions
+- deploy
 - publish MQTT messages
 - execute code
 - disable rollback
 - bypass canary
-- request full-fleet rollout as the first action
+- override schema validation
+- override simulator or verification rejection
 
-## Harness Output
+## Implemented Path
 
-Accepted example:
+```text
+scripts/run_openai_harness.py
+  -> load .env
+  -> OpenAIResponsesPlanClient
+  -> responses.parse(..., text_format=OptimizationPlanOutput)
+  -> OptimizationPlan.from_dict(...)
+  -> simulate_plan(...)
+  -> HarnessResult
+```
+
+Key files:
+
+```text
+swarmforge/openai_contract.py
+swarmforge/harness.py
+swarmforge/env.py
+tests/test_harness.py
+```
+
+## Harness Result
+
+Accepted baseline example:
 
 ```json
 {
-  "run_id": "run_local_001",
   "status": "ready_for_canary",
   "plan_status": "valid",
   "simulation_status": "accepted",
@@ -74,28 +80,16 @@ Accepted example:
 }
 ```
 
-Rejected example:
+Sprint 4 should wrap or reinterpret this as:
 
-```json
-{
-  "run_id": "run_local_002",
-  "status": "simulation_rejected",
-  "plan_status": "valid",
-  "simulation_status": "rejected",
-  "deployment_decision": "blocked",
-  "plan": {},
-  "simulation_result": {
-    "accepted": false,
-    "reason": "Filter reduced noise but exceeded the latency budget."
-  }
-}
+```text
+baseline accepted -> run verification matrix -> final canary decision
 ```
 
-Schema rejection example:
+Schema rejection:
 
 ```json
 {
-  "run_id": "run_local_003",
   "status": "schema_rejected",
   "plan_status": "invalid",
   "simulation_status": "not_started",
@@ -104,23 +98,20 @@ Schema rejection example:
 }
 ```
 
-## Implementation Notes
+Simulation rejection:
 
-- Use the Responses API as the model interface.
-- Use Structured Outputs so the response is constrained to the `OptimizationPlan` JSON schema.
-- Keep the OpenAI client behind a small adapter so tests can use a fake model client.
-- Do not require network or API keys for unit tests.
-- Keep schema validation and simulation local.
-- Do not introduce FastAPI or MQTT yet.
-
-## Test Scenarios
-
-| Scenario | Model Plan | Expected Result |
-| --- | --- | --- |
-| Happy path | Valid `2Hz` median plan | `ready_for_canary` |
-| Unsafe rollout | Full fleet first action | `schema_rejected` |
-| Slow filter | Window `15` with tight latency | `simulation_rejected` |
-| Malformed JSON | Missing required fields | `schema_rejected` |
+```json
+{
+  "status": "simulation_rejected",
+  "plan_status": "valid",
+  "simulation_status": "rejected",
+  "deployment_decision": "blocked",
+  "simulation_result": {
+    "accepted": false,
+    "reason": "Filter reduced noise but exceeded the latency budget."
+  }
+}
+```
 
 ## Local Commands
 
@@ -142,22 +133,33 @@ Verified Sprint 3 live path:
 OpenAI structured plan -> schema valid -> simulation accepted -> ready_for_canary
 ```
 
-## Definition of Done
+## Test Scenarios
+
+| Scenario | Model Plan | Expected Result |
+| --- | --- | --- |
+| Happy path | Valid `2Hz` median plan | Accepted baseline |
+| Unsafe rollout | Full fleet first action | `schema_rejected` |
+| Slow filter | Window `15` with tight latency | `simulation_rejected` |
+| Fake model client | No OpenAI network | unit tests pass |
+
+## Definition Of Done
 
 Sprint 3 is complete when:
 
-- A prompt can be passed to a harness runner.
-- The OpenAI adapter can request a structured `OptimizationPlan`.
-- Unit tests can run with a fake model client and no network.
-- Valid model plans pass into the Sprint 2 simulator.
-- Invalid model plans are rejected before simulation.
-- Simulator failures block deployment.
-- No OTA/MQTT side effect exists yet.
+- OpenAI SDK can produce a structured plan.
+- Unit tests run without network or API key.
+- Live smoke test can use `.env`.
+- Schema failures are blocked before simulation.
+- Simulation failures are blocked before verification/deployment.
 
 ## Sprint 4 Handoff
 
-Sprint 4 should consume only `ready_for_canary` harness results.
+Sprint 4 consumes only schema-valid, baseline-accepted plans and runs:
 
 ```text
-ready_for_canary -> select canary nodes -> dispatch MQTT config -> monitor -> promote/rollback
+OptimizationPlan
+  -> ScenarioMatrix
+  -> VerificationRunner
+  -> RiskReport
+  -> ready_for_canary or blocked
 ```

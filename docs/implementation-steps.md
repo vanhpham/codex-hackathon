@@ -1,289 +1,306 @@
 # SwarmForge Harness Implementation Steps
 
-This document breaks the system into small build phases. The goal is to keep the project demoable at every stage.
+This roadmap reflects the updated hackathon strategy: SwarmForge is an **AI-assisted verification control plane**, not a simple OTA config manager.
 
-## Five-Sprint Delivery Map
-
-The detailed phases below can be grouped into five hackathon-friendly sprints:
+The core flow:
 
 ```text
-Sprint 1: Product contract + schema gate
-Sprint 2: Local simulator + metric scoring
+Engineer prompt
+  -> OpenAI structured control plan
+  -> schema and policy gate
+  -> adversarial scenario matrix
+  -> multi-simulation verification runner
+  -> invariant checks and risk report
+  -> canary-ready decision or blocked decision
+  -> trace/eval record
+```
+
+The model proposes. The harness verifies. The harness decides.
+
+## Sprint Map
+
+```text
+Sprint 1: Product contract and typed control plan
+Sprint 2: Local simulator and baseline metric scoring
 Sprint 3: OpenAI structured harness
-Sprint 4: MQTT edge loop + canary/rollback
-Sprint 5: Dashboard + trace/eval polish
+Sprint 4: Scalable verification runner
+Sprint 5: Trace/eval records and dashboard
+Sprint 6: MQTT edge loop and canary runtime
 ```
 
-Sprint 1 is tracked in:
+Sprint docs:
 
 ```text
+docs/current-state-audit.md
 docs/sprint-1-product-contract.md
-```
-
-Sprint 2 is tracked in:
-
-```text
 docs/sprint-2-simulator-plan.md
-```
-
-Sprint 3 is tracked in:
-
-```text
 docs/sprint-3-openai-harness.md
+docs/sprint-4-verification-runner.md
+docs/sprint-5-trace-dashboard.md
+docs/sprint-6-mqtt-edge-loop.md
 ```
 
-## Phase 0: Product Decision
+## Strategic Rationale
 
-Decide the core promise:
+For the hackathon track, the strongest engineering signal is not "we can publish config over MQTT." The stronger signal is:
 
 ```text
-Natural-language engineering request -> safe OTA tuning plan -> simulated edge swarm impact
+One prompt becomes a typed plan.
+The plan is stress-tested across many deterministic edge scenarios.
+The harness produces a risk report with auditable reasons.
+Only safe plans can approach deployment.
 ```
 
-Decide the first demo scenario:
+MQTT remains part of the final control-plane story, but verification depth comes first.
+
+## Sprint 1: Product Contract And Typed Control Plan
+
+Goal:
 
 ```text
-Noisy off-road accelerometer stream
-10 Hz baseline telemetry
-LLM proposes 2 Hz median-filtered telemetry
-Harness validates, simulates, canaries, promotes, or rolls back
+Define the problem, safety boundary, control knobs, and typed OptimizationPlan.
 ```
 
-## Phase 1: Repository Skeleton
+Primary outputs:
 
-Create:
+- product thesis
+- typed plan contract
+- allowed operational knobs
+- schema/policy constraints
+- accepted/rejected examples
+- run-state draft
+
+Key requirements:
+
+- The model may propose a plan only.
+- The harness owns validation, simulation, verification, and deployment decisions.
+- Rollback must be enabled.
+- First deployment must be canary.
+- Config/code execution paths must stay separate.
+
+Status:
 
 ```text
-backend/
-edge-node/
-web/
-docs/
-docker-compose.yml
-.env.example
+Complete, but updated docs should keep expanding the plan beyond basic config fields.
 ```
 
-Do not over-abstract early. Keep the first version easy to run and easy to explain.
+## Sprint 2: Local Simulator And Baseline Metric Scoring
 
-## Phase 2: Schemas First
-
-Define the optimization plan schema before implementing the OpenAI call.
-
-Core models:
+Goal:
 
 ```text
-OptimizationPlan
-FilterSpec
-DeploymentSpec
-RollbackPolicy
-SimulationResult
-HarnessRun
-TelemetrySnapshot
+Prove one plan can be measured locally before any OpenAI or MQTT runtime matters.
 ```
 
-Important constraints:
+Primary outputs:
+
+- deterministic accelerometer signal
+- trusted filter implementations
+- bandwidth estimate
+- latency estimate
+- simple scoring
+- accepted/rejected simulation result
+
+Key requirements:
+
+- Tests run without network.
+- Median filter happy path is accepted.
+- Oversized filter is rejected.
+- Payload cap violations are rejected.
+- No-useful-change plans are rejected.
+
+Status:
 
 ```text
-sampling_rate_hz between 1 and 20
-filter.type from an allowlist
-filter.window_size bounded
-first deployment must be canary
-rollback policy required
+Complete baseline. Sprint 4 generalizes this into scenario-matrix verification.
 ```
+
+## Sprint 3: OpenAI Structured Harness
+
+Goal:
+
+```text
+Connect OpenAI Structured Outputs to the local schema and simulator gates.
+```
+
+Primary outputs:
+
+- Pydantic output contract
+- OpenAI Responses API adapter
+- local `.env` loader
+- harness runner
+- fake-client unit tests
+- live OpenAI SDK smoke test
+
+Key requirements:
+
+- Unit tests must not require network or API keys.
+- Live smoke test may use `.env`.
+- Model returns only a typed plan.
+- Harness blocks schema failures.
+- Harness blocks simulator failures.
+
+Status:
+
+```text
+Complete and merged to main.
+```
+
+## Sprint 4: Scalable Verification Runner
+
+Goal:
+
+```text
+Turn one valid plan into many adversarial simulations and a risk report.
+```
+
+Primary outputs:
+
+- `ScenarioSpec`
+- `ScenarioMatrix`
+- `SafetyInvariant`
+- `VerificationRunner`
+- `RiskReport`
+- CLI runner for verification matrix
+- tests for pass/fail aggregation
+- adaptive counterexample pipeline (optional)
+- candidate metadata + suggestions report integration
+
+Key requirements:
+
+- Deterministic seeds.
+- Configurable scenario count.
+- Terrain/noise/network/battery/sensor variants.
+- Per-scenario simulation outputs.
+- Invariant failures captured with reasons.
+- Aggregated pass rate and risk score.
+- Final decision: `ready_for_canary` or `blocked`.
+- Adaptive mode with optional worker pool and bounded adaptive rounds.
+- Candidate suggestions must keep hard bounds.
 
 Acceptance:
 
 ```text
-Backend can validate a hard-coded plan.
-Invalid plans return clear rejection reasons.
+Complete. Good plan passes the verification matrix.
+Risky plan fails specific scenarios with clear reasons.
+Adaptive candidates are bounded, replayable, and policy-driven.
+Runner can execute 50+ local simulations quickly.
+Risk report is JSON-serializable and replayable.
 ```
 
-## Phase 3: Simulator
+## Sprint 4.5: Adaptive Verification And Suggestion
 
-Build the local simulator before real MQTT deployment.
-
-Input:
+Goal:
 
 ```text
-baseline synthetic signal
-candidate OptimizationPlan
+Move from static matrix replay to policy-driven adaptive stress and safe setting recommendations.
 ```
 
-Output:
+Primary outputs:
 
-```text
-noise_score_before
-noise_score_after
-bandwidth_before
-bandwidth_after
-latency_penalty
-accepted / rejected
-reason
-```
+- `adaptive_verification.py` for bounded counterexample candidates
+- `setting_suggester.py` for mutually-exclusive settings proposals
+- Worker-pool execution for batch verification
+- Adaptive report metadata for replay and audit
 
 Acceptance:
 
 ```text
-Median filter reduces noise score.
-Lower sample rate reduces estimated bandwidth.
-Oversized filter window is rejected for latency.
+Adaptive mode is disabled by default.
+LLM scenario generation is bounded and schema-validated.
+LLM-down mode still completes via deterministic fallback.
+Suggestions only use safe options within established constraints.
 ```
 
-## Phase 4: OpenAI Harness Call
+## Sprint 5: Trace/Eval Records And Dashboard
 
-Integrate OpenAI API only after schemas and simulator exist.
-
-Recommended behavior:
+Goal:
 
 ```text
-User prompt
-  -> Responses API
-  -> structured OptimizationPlan
-  -> local schema validation
-  -> simulation
+Make the verification story inspectable, replayable, and demo-friendly.
 ```
 
-Keep the model output limited to a plan. Do not deploy from inside the model response.
+Primary outputs:
+
+- durable run trace JSON
+- eval-case export format
+- replay command
+- lightweight dashboard or terminal report
+- run timeline
+- risk report visualization
+
+Key requirements:
+
+  - Every run records prompt, model plan, schema result, verification matrix, risk report, and final decision.
+  - Failed scenarios can be replayed by seed.
+  - Adaptive and suggestion metadata are included in stored traces.
+- Demo can show the difference between schema rejection and verification rejection.
+- Dashboard should emphasize engineering evidence, not marketing UI.
 
 Acceptance:
 
 ```text
-Prompt creates a valid plan.
-Malformed or unsafe prompt gets corrected or rejected.
-No OTA action happens until local gates pass.
+Sprint5 run artifacts can be inspected after every verification execution.
+Successful and blocked verification outcomes are both saved as traces.
+Replay command reproduces a failed scenario.
+Eval export includes scenario-level input/expected metadata.
 ```
 
-## Phase 5: MQTT and Edge Nodes
+## Sprint 6: MQTT Edge Loop And Canary Runtime
 
-Add Mosquitto and one edge node.
-
-Node behavior:
+Goal:
 
 ```text
-publish telemetry at configured sample rate
-subscribe to OTA config topic
-apply config without process restart
-publish events on config applied / exception / rollback
+Connect only verified `ready_for_canary` decisions to a bounded edge runtime.
 ```
+
+Primary outputs:
+
+- trusted OTA payload mapping
+- MQTT topic helpers
+- one virtual edge agent
+- targeted node dispatch
+- config-applied and config-rejected events
+- simple canary selection
+
+Key requirements:
+
+- Only `ready_for_canary` results can dispatch.
+- Rejected plans cannot become MQTT payloads.
+- The edge node validates config before applying.
+- Config applies without process restart.
+- Telemetry and event topics follow the documented contract.
 
 Acceptance:
 
 ```text
-One node sends telemetry.
-Backend receives telemetry.
-Backend can change sample rate through MQTT.
+One node receives a trusted OTA config.
+Node updates runtime config and emits config_applied.
+Invalid config emits config_rejected.
+No full-fleet deployment exists before canary.
 ```
 
-## Phase 6: Swarm Scaling
+## Stretch Work
 
-Scale edge nodes through Docker Compose.
+Add only after the core verification story is strong:
 
-Target:
+- multi-candidate plan ranking
+- Codex-generated adversarial scenario proposals
+- OpenAI eval dataset export
+- generated filter code with AST validator
+- FastAPI API surface
+- WebSocket dashboard
+- Docker Compose
+- Mosquitto MQTT runtime
+- 50-100 virtual nodes
+- Grafana/InfluxDB
+
+## Current Recommended Next Step
+
+Stop building MQTT-first runtime. Build Sprint 4:
 
 ```text
-10 nodes first
-50 nodes after stable
+ScenarioSpec -> ScenarioMatrix -> VerificationRunner -> RiskReport
 ```
 
-Acceptance:
-
-```text
-Dashboard/backend can show active node count.
-Telemetry remains stable under load.
-```
-
-## Phase 7: Canary Deployment
-
-Implement canary selection and observation window.
-
-Flow:
-
-```text
-select small node subset
-dispatch candidate config
-monitor for 5-10 seconds
-promote if healthy
-rollback if unhealthy
-```
-
-Acceptance:
-
-```text
-Only canary nodes receive first update.
-Healthy canary promotes to rest of fleet.
-Unhealthy canary rolls back automatically.
-```
-
-## Phase 8: Dashboard
-
-Build a custom dashboard first.
-
-Panels:
-
-```text
-fleet status
-current run timeline
-sample rate chart
-bandwidth estimate
-noise score
-canary status
-rollback events
-latest structured plan
-```
-
-Acceptance:
-
-```text
-User can run the 3-minute demo without looking at terminal logs.
-```
-
-## Phase 9: Eval Records
-
-Persist every run as a JSON trace-like record.
-
-Record:
-
-```text
-prompt
-model plan
-validation result
-simulation result
-deployment decision
-canary outcome
-rollback outcome
-```
-
-Acceptance:
-
-```text
-Past runs can be inspected and used as future eval cases.
-```
-
-## Phase 10: Polish and Stretch
-
-Possible stretch work:
-
-```text
-Grafana + InfluxDB
-AST-validated generated filter code
-multi-candidate ranking
-shadow deployment
-offline eval dataset
-demo replay button
-```
-
-Only add these after the MVP demo path is reliable.
-
-## Recommended Build Order
-
-```text
-1. Schemas
-2. Simulator
-3. OpenAI structured plan
-4. MQTT one-node loop
-5. Swarm scale
-6. Canary and rollback
-7. Dashboard
-8. Trace/eval records
-```
-
-This order keeps the riskiest logic visible early and avoids spending too much time on infrastructure before the harness is convincing.
+This is the pivot that makes SwarmForge fit the engineering-depth track.
