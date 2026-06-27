@@ -32,6 +32,12 @@ Sprint 3 is tracked in:
 docs/sprint-3-openai-harness.md
 ```
 
+Sprint 4 is tracked in:
+
+```text
+docs/sprint-4-mqtt-edge-loop.md
+```
+
 ## Phase 0: Product Decision
 
 Decide the core promise:
