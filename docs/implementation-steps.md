@@ -262,6 +262,8 @@ Primary outputs:
 - targeted node dispatch
 - config-applied and config-rejected events
 - simple canary selection
+- canary evaluation output (`promote`/`rollback`) from telemetry floor checks
+- runnable demo script (`scripts/run_canary_demo.py`)
 
 Key requirements:
 
@@ -278,6 +280,7 @@ One node receives a trusted OTA config.
 Node updates runtime config and emits config_applied.
 Invalid config emits config_rejected.
 No full-fleet deployment exists before canary.
+Promote/rollback recommendation is computed from canary telemetry and apply status.
 ```
 
 ## Stretch Work
@@ -297,10 +300,10 @@ Add only after the core verification story is strong:
 
 ## Current Recommended Next Step
 
-Stop building MQTT-first runtime. Build Sprint 4:
+Next step for Sprint 7:
 
 ```text
-ScenarioSpec -> ScenarioMatrix -> VerificationRunner -> RiskReport
+Canary runtime -> Promotion policy -> Rollback automation -> Dashboard
 ```
 
 This is the pivot that makes SwarmForge fit the engineering-depth track.

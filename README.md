@@ -232,11 +232,13 @@ Implemented:
 - `swarmforge/adaptive_verification.py`: LLM-aware counterexample generation with deterministic fallback.
 - `swarmforge/setting_suggester.py`: suggestion report for safer next plan settings.
 - `swarmforge/traces.py`: trace persistence, replay payload, and eval export.
+- `swarmforge/ota.py`, `swarmforge/topics.py`, `swarmforge/edge_runtime.py`: trusted canary mapping and in-memory edge runtime.
 - `scripts/run_openai_harness.py`: live OpenAI SDK smoke path.
 - `scripts/run_verification_matrix.py`: local verification matrix smoke path with traces.
 - `scripts/replay_trace_case.py`: replay one saved scenario deterministically.
 - `scripts/export_eval_case.py`: export eval-style fixture from a saved trace.
-- unit tests for simulator, harness, scenarios, verification, and trace replay.
+- `scripts/run_canary_demo.py`: execute verification-safe canary run to in-memory nodes.
+- unit tests for simulator, harness, scenarios, verification, trace replay, and canary runtime.
 
 ## Run Commands
 
@@ -262,6 +264,18 @@ Run local verification matrix:
 
 ```bash
 .venv/bin/python scripts/run_verification_matrix.py --scenario-count 50
+```
+
+Run canary demo from a built-in ready payload:
+
+```bash
+.venv/bin/python scripts/run_canary_demo.py
+```
+
+Run canary demo from a saved trace:
+
+```bash
+.venv/bin/python scripts/run_canary_demo.py --trace traces/<run_id>.json --node-count 10
 ```
 
 Run matrix + trace persistence + suggestion block:

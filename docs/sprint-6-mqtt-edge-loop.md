@@ -25,6 +25,8 @@ ready_for_canary RiskReport
 
 Sprint 6 establishes the runtime boundary. It should not bypass Sprint 4 verification.
 
+The current implementation uses an in-memory broker for deterministic local playback before introducing a full MQTT service.
+
 ## Inputs
 
 Sprint 6 consumes only verification-approved results:
@@ -106,7 +108,7 @@ canary_percentage: from plan deployment percentage
 canary_nodes: first N sorted node ids
 ```
 
-The first implementation only needs targeted dispatch. Promotion/rollback automation can be expanded after one-node MQTT is stable.
+The first implementation only needs targeted dispatch. Promotion/rollback automation can be expanded after telemetry feedback is stable.
 
 ## Test Scenarios
 
@@ -126,11 +128,16 @@ Unit tests:
 .venv/bin/python -m unittest
 ```
 
-Live MQTT smoke test:
+Local canary demo:
 
-```text
-docker compose up mqtt
-.venv/bin/python edge_node/edge_agent.py --node-id node-01
+```bash
+.venv/bin/python scripts/run_canary_demo.py
+```
+
+Canary demo from a saved trace:
+
+```bash
+.venv/bin/python scripts/run_canary_demo.py --trace traces/<run_id>.json --node-count 10
 ```
 
 ## Definition Of Done
@@ -143,6 +150,7 @@ Sprint 6 is complete when:
 - MQTT topics are generated consistently.
 - One edge node can apply an OTA config without restart.
 - Tests cover config mapping, dispatch blocking, canary selection, and edge apply logic.
+- Demo output includes canary decision (`promote`/`rollback`) from applied telemetry health.
 
 ## Stretch Handoff
 
