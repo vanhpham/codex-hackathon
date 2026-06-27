@@ -29,7 +29,10 @@ from swarmforge.mqtt_transport import PahoMqttTransport, RuntimeTransportUnavail
 from swarmforge.ota import build_ota_config
 from swarmforge.scenarios import ScenarioSpec, generate_scenario_matrix
 from swarmforge.schemas import OptimizationPlan
-from swarmforge.setting_suggester import suggest_setting_adjustments
+from swarmforge.setting_suggester import (
+    OpenAISettingSuggestionClient,
+    suggest_setting_adjustments,
+)
 from swarmforge.traces import build_verification_trace, load_trace, make_run_id, replay_trace_case, save_trace
 from swarmforge.verification import DEFAULT_ADAPTIVE_WORKERS, run_verification_matrix
 
@@ -748,6 +751,9 @@ INDEX_HTML = """<!doctype html>
                   <option value="false">Off</option>
                 </select>
               </label>
+              <label>LLM tuning
+                <input id="operatorLLMSuggestions" type="checkbox" checked />
+              </label>
             </div>
             <div class="toolbar">
               <button onclick="runOperatorPlan()">Generate + Verify</button>
@@ -1162,6 +1168,7 @@ INDEX_HTML = """<!doctype html>
       const scenarioCount = Number(document.getElementById("operatorScenarioCount").value);
       const workers = Number(document.getElementById("operatorWorkers").value);
       const adaptive = document.getElementById("operatorAdaptive").value === "true";
+      const llmSuggestions = document.getElementById("operatorLLMSuggestions").checked;
 
       setBadgeState("operatorState", "running", "running");
       setBadgeState("pipelineState", "running", "running");
@@ -1188,6 +1195,7 @@ INDEX_HTML = """<!doctype html>
             workers,
             adaptive,
             suggest_settings: true,
+            llm_suggestions: llmSuggestions,
           }),
         });
         latestReadyPayload = result.ready_payload || null;
@@ -1414,6 +1422,7 @@ class FleetController:
         adaptive_rounds: int = 1,
         adaptive_budget: int = 20,
         suggest_settings: bool = True,
+        llm_suggestions: bool = False,
     ) -> dict[str, Any]:
         prompt = (prompt or DEFAULT_OPERATOR_PROMPT).strip()
         scenario_count = max(5, min(500, int(scenario_count)))
@@ -1546,19 +1555,31 @@ class FleetController:
 
         setting_suggestion_report = None
         if suggest_settings:
+            ai_setting_client = (
+                OpenAISettingSuggestionClient() if planner_mode == "openai" and llm_suggestions else None
+            )
             self._add_operator_step(
                 pipeline_steps,
                 "setting_suggestion",
                 "running",
                 "Generating safe setting suggestions.",
             )
-            setting_suggestion_report = suggest_setting_adjustments(plan=plan, report=report)
+            setting_suggestion_report = suggest_setting_adjustments(
+                plan=plan,
+                report=report,
+                client=ai_setting_client,
+                use_llm=ai_setting_client is not None,
+            )
+            suggestion_count = len(setting_suggestion_report.mutually_exclusive_options) if setting_suggestion_report else 0
             self._add_operator_step(
                 pipeline_steps,
                 "setting_suggestion",
                 "done",
                 "Setting suggestions attached (if any).",
-                {"count": len(setting_suggestion_report.mutually_exclusive_options)},
+                {
+                    "count": suggestion_count,
+                    "ai_enabled": ai_setting_client is not None,
+                },
             )
         else:
             self._add_operator_step(
@@ -1869,6 +1890,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     adaptive_rounds=int(request.get("adaptive_rounds", 1)),
                     adaptive_budget=int(request.get("adaptive_budget", 20)),
                     suggest_settings=bool(request.get("suggest_settings", True)),
+                    llm_suggestions=bool(request.get("llm_suggestions", False)),
                 )
                 self._send_json(result)
             except (KeyError, TypeError, ValueError) as exc:
