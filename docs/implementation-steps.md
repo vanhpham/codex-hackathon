@@ -31,6 +31,7 @@ Sprint 6: MQTT edge loop and canary runtime
 Sprint docs:
 
 ```text
+docs/current-state-audit.md
 docs/sprint-1-product-contract.md
 docs/sprint-2-simulator-plan.md
 docs/sprint-3-openai-harness.md

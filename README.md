@@ -213,6 +213,12 @@ Only a `ready_for_canary` decision may become a deployment artifact. MQTT/edge-n
 
 ## Current Code Status
 
+For the latest branch/sprint audit, see:
+
+```text
+docs/current-state-audit.md
+```
+
 Implemented:
 
 - `swarmforge/openai_contract.py`: Pydantic Structured Output model.
