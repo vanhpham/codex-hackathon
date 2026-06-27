@@ -196,6 +196,8 @@ score =
   + payload_budget_remaining * 0.05
 ```
 
+The default weights above are for `reduce_noise_and_bandwidth`. Bandwidth-only and noise-only intents may use intent-specific weights so the simulator rewards the metric the operator actually asked to improve.
+
 Where:
 
 ```text
