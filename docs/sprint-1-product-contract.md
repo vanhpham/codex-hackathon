@@ -55,6 +55,7 @@ Signal: noisy accelerometer stream
 Baseline sample rate: 10 Hz
 Baseline log level: INFO
 Baseline filter: none
+Baseline telemetry collection: accelerometer, temperature, battery, bandwidth
 Problem: high noise, high bandwidth, higher battery drain
 ```
 
@@ -83,6 +84,7 @@ The LLM may produce:
 - sample rate target
 - filter specification
 - log level
+- telemetry collection configuration
 - deployment strategy request
 - rollback policy request
 - human-readable rationale
@@ -102,6 +104,7 @@ The harness owns:
 - schema validation
 - policy validation
 - trusted filter implementation mapping
+- trusted telemetry collection mapping
 - simulation
 - scoring
 - canary selection
@@ -124,6 +127,12 @@ This is the canonical object the model should return through Structured Outputs 
     "type": "median",
     "window_size": 5
   },
+  "telemetry_collection": {
+    "metrics": ["accelerometer", "temperature", "battery"],
+    "aggregation_window_seconds": 5,
+    "publish_mode": "summary_and_anomalies",
+    "max_payload_kbps": 8
+  },
   "deployment": {
     "strategy": "canary",
     "percentage": 5,
@@ -138,6 +147,16 @@ This is the canonical object the model should return through Structured Outputs 
   "rationale": "Reduce noisy accelerometer readings and lower bandwidth while preserving a bounded rollout."
 }
 ```
+
+## Approved Sprint 1 Decisions
+
+The initial schema direction is approved with these MVP constraints:
+
+- `sampling_rate_hz` range is `1..20`.
+- `filter.type` stays allowlisted as `none`, `moving_average`, `median`, and `low_pass`.
+- First deployment must use `canary`.
+- Rollback must remain enabled.
+- OTA plans may also tune telemetry collection settings through the schema-controlled `telemetry_collection` object.
 
 ## Field Requirements
 
@@ -240,6 +259,63 @@ Recommended MVP filter:
 }
 ```
 
+### `telemetry_collection`
+
+OTA tuning can update how edge nodes collect and publish telemetry, as long as the request stays inside a schema-controlled configuration object.
+
+Allowed metrics:
+
+```text
+accelerometer
+temperature
+battery
+bandwidth
+telemetry_health
+error_count
+config_version
+```
+
+Allowed publish modes:
+
+```text
+raw
+summary
+summary_and_anomalies
+anomalies_only
+```
+
+Requirements:
+
+- Required for MVP plans.
+- `metrics` must include at least one metric.
+- `accelerometer` should remain included for the first demo scenario.
+- `aggregation_window_seconds` must be between `1` and `60`.
+- `max_payload_kbps` must be between `1` and `64`.
+- `publish_mode` must be allowlisted.
+- The model may request telemetry collection changes, but the backend maps them to trusted node config.
+
+Recommended MVP telemetry collection:
+
+```json
+{
+  "metrics": ["accelerometer", "temperature", "battery"],
+  "aggregation_window_seconds": 5,
+  "publish_mode": "summary_and_anomalies",
+  "max_payload_kbps": 8
+}
+```
+
+Reject examples:
+
+```json
+{
+  "metrics": [],
+  "aggregation_window_seconds": 0,
+  "publish_mode": "custom_script",
+  "max_payload_kbps": 500
+}
+```
+
 ### `deployment`
 
 Allowed strategies:
@@ -311,6 +387,12 @@ Accepted example:
       "type": "median",
       "window_size": 5
     },
+    "telemetry_collection": {
+      "metrics": ["accelerometer", "temperature", "battery"],
+      "aggregation_window_seconds": 5,
+      "publish_mode": "summary_and_anomalies",
+      "max_payload_kbps": 8
+    },
     "deployment": {
       "strategy": "canary",
       "percentage": 5,
@@ -334,6 +416,7 @@ Rejected example:
   "stage": "schema_gate",
   "reasons": [
     "sampling_rate_hz must be between 1 and 20",
+    "telemetry_collection.publish_mode must be allowlisted",
     "first deployment must use canary",
     "rollback.enabled must be true"
   ],
@@ -386,6 +469,7 @@ failed
 | Demo scenario | Define baseline, operator request, expected safe result | Scenario contract |
 | LLM boundary | List what model may and may not do | Safety contract |
 | Schema draft | Define OptimizationPlan fields and constraints | JSON examples |
+| Telemetry collection | Define OTA-tunable telemetry collection fields | `telemetry_collection` contract |
 | Validation result | Define accepted/rejected output shape | Result contract |
 | Run state | Define future trace/dashboard state shape | HarnessRun draft |
 | Approval checkpoint | Confirm schema before coding | Sprint 1 sign-off |
@@ -398,6 +482,7 @@ Sprint 1 is complete when:
 - The MVP demo scenario is explicit.
 - The LLM boundary is clear.
 - `OptimizationPlan` fields and constraints are agreed.
+- OTA-tunable telemetry collection fields are agreed.
 - Validation accepted/rejected output shapes are agreed.
 - Future simulator and backend work can consume this contract.
 - No runtime implementation has been started without approval.
@@ -410,6 +495,7 @@ Simulator input:
 
 ```text
 OptimizationPlan
+telemetry_collection config
 baseline synthetic accelerometer signal
 baseline fleet config
 ```
