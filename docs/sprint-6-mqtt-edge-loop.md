@@ -25,7 +25,12 @@ ready_for_canary RiskReport
 
 Sprint 6 establishes the runtime boundary. It should not bypass Sprint 4 verification.
 
-The current implementation uses an in-memory broker for deterministic local playback before introducing a full MQTT service.
+Sprint 6 now uses a real MQTT path locally:
+
+- Mosquitto via `docker/docker-compose.yml`
+- Runtime transport via Docker CLI (`swarmforge.mqtt_transport`)
+- Dashboard in `scripts/sprint6_web.py`
+- Optional standalone node process in `scripts/mqtt_node_agent.py`
 
 ## Inputs
 
@@ -140,6 +145,32 @@ Canary demo from a saved trace:
 .venv/bin/python scripts/run_canary_demo.py --trace traces/<run_id>.json --node-count 10
 ```
 
+## Sprint 6 Runtime (Docker + Web)
+
+Start broker:
+
+```bash
+docker compose -f docker/docker-compose.yml up -d
+```
+
+Run optional standalone node agents:
+
+```bash
+.venv/bin/python scripts/run_sprint6_nodes.py --node-count 8 --broker-host localhost
+```
+
+Start dashboard (embedded nodes + MQTT mode):
+
+```bash
+.venv/bin/python scripts/sprint6_web.py --broker-mode mqtt --node-count 8 --broker-host localhost
+```
+
+Stop broker:
+
+```bash
+docker compose -f docker/docker-compose.yml down
+```
+
 ## Definition Of Done
 
 Sprint 6 is complete when:
@@ -151,6 +182,7 @@ Sprint 6 is complete when:
 - One edge node can apply an OTA config without restart.
 - Tests cover config mapping, dispatch blocking, canary selection, and edge apply logic.
 - Demo output includes canary decision (`promote`/`rollback`) from applied telemetry health.
+- Docker MQTT + web dashboard + node path is runnable end-to-end (with optional standalone node agents).
 
 ## Stretch Handoff
 

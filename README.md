@@ -278,6 +278,31 @@ Run canary demo from a saved trace:
 .venv/bin/python scripts/run_canary_demo.py --trace traces/<run_id>.json --node-count 10
 ```
 
+Sprint 6 runtime (Docker MQTT + web dashboard):
+
+```bash
+# start local Mosquitto broker
+docker compose -f docker/docker-compose.yml up -d
+
+# optional: run N MQTT edge-node agents (each one listens to OTA and publishes telemetry)
+.venv/bin/python scripts/run_sprint6_nodes.py --node-count 8 --broker-host localhost
+
+# run web dashboard + canary loop (embedded runtime nodes)
+.venv/bin/python scripts/sprint6_web.py --broker-mode mqtt --node-count 8 --broker-host localhost --port 8080
+```
+
+If you prefer fully in-memory runtime (no Docker required), switch to:
+
+```bash
+.venv/bin/python scripts/sprint6_web.py --broker-mode in-memory --node-count 5
+```
+
+Shut down broker when done:
+
+```bash
+docker compose -f docker/docker-compose.yml down
+```
+
 Run matrix + trace persistence + suggestion block:
 
 ```bash

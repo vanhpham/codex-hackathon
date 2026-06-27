@@ -7,14 +7,14 @@ This document records the real project state after the pivot to **AI-assisted ve
 Current working branch:
 
 ```text
-main
+sprint-6
 ```
 
 Current branch includes the verification hardening stack through Sprint 6.
 
 Interpretation:
 
-- `main` now includes Sprints 1-6.
+- `sprint-6` now includes Sprints 1-6.
 - Branch history contains earlier pivot commits (`14c2de8` and later hardening commits).
 - The tree is aligned with the new strategy from a real end-to-end local canary loop.
 
@@ -30,7 +30,7 @@ If a clean PR history matters later, squash or rebase the branch before opening 
 | Sprint 4 | Scalable verification runner | Implemented scenario matrix, invariants, risk report, CLI, and tests | Aligned |
 | Sprint 4.5 | Adaptive verification + suggestions | Added bounded adaptive generation, worker pool, suggestion engine, and reporting metadata | Completed |
 | Sprint 5 | Trace/eval records and dashboard | Trace persistence, replay, and eval export are implemented | Completed |
-| Sprint 6 | MQTT edge loop and canary runtime | In-memory canary loop, dispatch evaluation, and demo runner are implemented | Completed |
+| Sprint 6 | MQTT edge loop and canary runtime | Docker-backed transport, web runtime dashboard, and node agent flow are implemented | Completed |
 
 ## Current Code State
 
@@ -56,7 +56,11 @@ scripts/export_eval_case.py
 swarmforge/ota.py
 swarmforge/topics.py
 swarmforge/edge_runtime.py
+swarmforge/mqtt_transport.py
 scripts/run_canary_demo.py
+scripts/mqtt_node_agent.py
+scripts/run_sprint6_nodes.py
+scripts/sprint6_web.py
 tests/test_harness.py
 tests/test_simulator.py
 tests/test_scenarios.py
@@ -67,8 +71,10 @@ tests/test_verification_adaptive.py
 tests/test_ota.py
 tests/test_edge_runtime.py
 tests/test_run_canary_demo.py
+docker/docker-compose.yml
+docker/mosquitto.conf
 requirements.txt
-```
+``` 
 
 These support:
 
@@ -76,18 +82,20 @@ These support:
 prompt -> OpenAI structured plan -> schema gate -> baseline simulator -> verification matrix -> risk report
 ```
 
-They do not yet support:
+They also support:
 
 ```text
-Live dashboard UI
-true MQTT broker loop
+Docker-backed MQTT transport (`swarmforge.mqtt_transport`, `docker/docker-compose.yml`)
+web dashboard (`scripts/sprint6_web.py`)
+standalone node agents (`scripts/mqtt_node_agent.py`, `scripts/run_sprint6_nodes.py`)
 ```
 
-That gap is expected as external broker integration is after in-memory canary loop and traceable outcomes.
+Live Docker validation is expected in environments where Docker daemon access is available.
 
 ## Known Workspace Issue
 
-Current Sprint 6 coverage includes OTA payload mapping, canary edge dispatch, and runtime health evaluation.
+Current environment cannot execute Docker transport smoke checks (daemon/socket access is unavailable),  
+so live runtime verification is validated by contract/unit tests and documented runbook instead.
 
 ## Current Verification
 
@@ -114,9 +122,8 @@ Important nuance:
 
 Sprint 7+ scope:
 
-- true MQTT runtime integration
 - promotion monitor and rollback automation
-- web dashboard
+- richer dashboard observability and promotion workflows
 
 ## Final Audit Verdict
 
@@ -126,5 +133,5 @@ Status:
 
 ```text
 Sprints 1-6: aligned and implemented.
-Workspace: deterministic in-memory canary loop is now runnable.
+Sprint 6 now includes runnable Docker-backed transport, node agents, and web dashboard entrypoints.
 ```

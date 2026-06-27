@@ -259,6 +259,9 @@ Primary outputs:
 - trusted OTA payload mapping
 - MQTT topic helpers
 - one virtual edge agent
+- Docker MQTT stack (`docker/docker-compose.yml`)
+- optional standalone node agents (`scripts/mqtt_node_agent.py`, `scripts/run_sprint6_nodes.py`)
+- web dashboard (`scripts/sprint6_web.py`)
 - targeted node dispatch
 - config-applied and config-rejected events
 - simple canary selection
@@ -293,8 +296,6 @@ Add only after the core verification story is strong:
 - generated filter code with AST validator
 - FastAPI API surface
 - WebSocket dashboard
-- Docker Compose
-- Mosquitto MQTT runtime
 - 50-100 virtual nodes
 - Grafana/InfluxDB
 
