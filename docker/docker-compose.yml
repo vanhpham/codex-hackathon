@@ -61,6 +61,7 @@ services:
       --broker-host mosquitto
       --broker-port 1883
       --telemetry-interval ${SWARM_TELEMETRY_INTERVAL:-1.5}
+      --node-prefix edge-
       --health-curve ${SWARM_HEALTH_CURVE:-healthy}
       --health-floor ${SWARM_HEALTH_FLOOR:-0.95}"
 
