@@ -45,6 +45,10 @@ class RiskReport:
     critical_failures: tuple[str, ...]
     decision: str
     case_results: tuple[VerificationCaseResult, ...]
+    executed_scenarios: tuple[dict[str, Any], ...] = ()
+    adaptive_cycles: int = 0
+    candidate_scenarios: tuple[str, ...] = ()
+    adaptive_metadata: tuple[dict[str, Any], ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -58,5 +62,25 @@ class RiskReport:
             "failed_scenarios": list(self.failed_scenarios),
             "critical_failures": list(self.critical_failures),
             "decision": self.decision,
+            "executed_scenarios": list(self.executed_scenarios),
+            "adaptive_cycles": self.adaptive_cycles,
+            "candidate_scenarios": list(self.candidate_scenarios),
+            "adaptive_metadata": list(self.adaptive_metadata),
             "case_results": [result.to_dict() for result in self.case_results],
+        }
+
+
+@dataclass(frozen=True)
+class SettingSuggestionReport:
+    reason: str
+    confidence: float
+    mutually_exclusive_options: tuple[dict[str, Any], ...]
+    risk_delta_preview: dict[str, Any]
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "reason": self.reason,
+            "confidence": round(self.confidence, 4),
+            "mutually_exclusive_options": list(self.mutually_exclusive_options),
+            "risk_delta_preview": self.risk_delta_preview,
         }

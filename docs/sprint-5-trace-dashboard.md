@@ -32,21 +32,33 @@ Every run should produce a JSON record:
   "run_id": "run_001",
   "prompt": "...",
   "model": "gpt-5.5",
-  "model_plan": {},
-  "schema_result": {
-    "status": "passed"
-  },
-  "baseline_simulation": {},
+  "plan": {},
   "verification": {
+    "verification_status": "passed",
     "scenario_count": 500,
     "pass_rate": 0.962,
     "risk_score": 0.18,
-    "decision": "ready_for_canary"
+    "decision": "ready_for_canary",
+    "candidate_scenarios": [],
+    "adaptive_cycles": 0,
+    "adaptive_metadata": []
   },
-  "failed_scenarios": [],
+  "scenario_records": [
+    {
+      "scenario": {},
+      "result": {}
+    }
+  ],
   "created_at": "2026-06-27T00:00:00Z"
 }
 ```
+
+Implemented files:
+
+- `swarmforge/traces.py`
+- `scripts/run_verification_matrix.py` (with `--trace-dir`, `--trace-id`, `--no-trace`)
+- `scripts/replay_trace_case.py`
+- `scripts/export_eval_case.py`
 
 ## Eval Export
 
@@ -94,6 +106,12 @@ Add a replay path:
 run_id -> failed scenario seed -> rerun simulator -> same result
 ```
 
+Current CLI:
+
+```bash
+.venv/bin/python scripts/replay_trace_case.py traces/run_001.json --scenario-id adaptive_...
+```
+
 This is a strong judge moment because it proves the harness is inspectable.
 
 ## Test Scenarios
@@ -110,7 +128,7 @@ This is a strong judge moment because it proves the harness is inspectable.
 
 Sprint 5 is complete when:
 
-- every verification run creates a trace
+- every verification run creates a trace by default (unless `--no-trace`)
 - accepted and blocked examples are saved
 - failed scenarios can be replayed by seed
 - eval export exists

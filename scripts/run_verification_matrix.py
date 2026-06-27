@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -10,8 +11,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from swarmforge.schemas import OptimizationPlan
-from swarmforge.scenarios import generate_scenario_matrix
-from swarmforge.verification import run_verification_matrix
+from swarmforge.verification import DEFAULT_ADAPTIVE_WORKERS, run_verification_matrix
+from swarmforge.scenarios import ScenarioSpec, generate_scenario_matrix
+from swarmforge.setting_suggester import suggest_setting_adjustments
+from swarmforge.traces import build_verification_trace, make_run_id, save_trace
 
 
 SAMPLE_PLAN = {
@@ -47,6 +50,15 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Run the Sprint 4 verification matrix.")
     parser.add_argument("--scenario-count", type=int, default=50)
     parser.add_argument("--seed-start", type=int, default=1)
+    parser.add_argument("--adaptive", action="store_true")
+    parser.add_argument("--workers", type=int, default=DEFAULT_ADAPTIVE_WORKERS)
+    parser.add_argument("--adaptive-rounds", type=int, default=1)
+    parser.add_argument("--adaptive-budget", type=int, default=20)
+    parser.add_argument("--suggest-settings", action="store_true")
+    parser.add_argument("--max-suggestions", type=int, default=3)
+    parser.add_argument("--trace-dir", default=".swarmforge_traces")
+    parser.add_argument("--trace-id", default=None)
+    parser.add_argument("--no-trace", action="store_true")
     args = parser.parse_args()
 
     plan = OptimizationPlan.from_dict(SAMPLE_PLAN)
@@ -57,8 +69,50 @@ def main() -> None:
     report = run_verification_matrix(
         plan=plan,
         scenarios=scenarios,
+        enable_adaptive=args.adaptive,
+        workers=args.workers,
+        adaptive_rounds=args.adaptive_rounds,
+        adaptive_budget=args.adaptive_budget,
+        seed_start=args.seed_start,
     )
-    print(json.dumps(report.to_dict(), indent=2, sort_keys=True))
+    setting_suggestions = None
+    setting_suggestion_report = None
+
+    payload = {
+        "verification": report.to_dict(),
+    }
+
+    if args.suggest_settings:
+        setting_suggestion_report = suggest_setting_adjustments(
+            plan=plan,
+            report=report,
+            max_suggestions=args.max_suggestions,
+        )
+        setting_suggestions = setting_suggestion_report.to_dict()
+        payload["setting_suggestions"] = setting_suggestions
+
+    if not args.no_trace:
+        trace = build_verification_trace(
+            plan=plan,
+            report=report,
+            scenarios=(
+                tuple(ScenarioSpec(**spec) for spec in report.executed_scenarios)
+                if report.executed_scenarios
+                else tuple(scenarios)
+            ),
+            run_id=args.trace_id or make_run_id(),
+            model=os.getenv("OPENAI_MODEL", "gpt-5.5"),
+            prompt="local verification matrix demo",
+            setting_suggestion=setting_suggestion_report,
+        )
+        trace_path = Path(args.trace_dir) / f"{trace.run_id}.json"
+        save_trace(trace, trace_path)
+        payload["trace"] = {
+            "run_id": trace.run_id,
+            "path": str(trace_path),
+        }
+
+    print(json.dumps(payload, indent=2, sort_keys=True))
 
 
 if __name__ == "__main__":

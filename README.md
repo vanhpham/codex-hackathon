@@ -229,9 +229,14 @@ Implemented:
 - `swarmforge/invariants.py`: safety invariant checks.
 - `swarmforge/verification.py`: multi-simulation verification runner.
 - `swarmforge/risk.py`: risk report and per-case result models.
+- `swarmforge/adaptive_verification.py`: LLM-aware counterexample generation with deterministic fallback.
+- `swarmforge/setting_suggester.py`: suggestion report for safer next plan settings.
+- `swarmforge/traces.py`: trace persistence, replay payload, and eval export.
 - `scripts/run_openai_harness.py`: live OpenAI SDK smoke path.
-- `scripts/run_verification_matrix.py`: local verification matrix smoke path.
-- unit tests for simulator, harness, scenarios, and verification.
+- `scripts/run_verification_matrix.py`: local verification matrix smoke path with traces.
+- `scripts/replay_trace_case.py`: replay one saved scenario deterministically.
+- `scripts/export_eval_case.py`: export eval-style fixture from a saved trace.
+- unit tests for simulator, harness, scenarios, verification, and trace replay.
 
 ## Run Commands
 
@@ -257,6 +262,80 @@ Run local verification matrix:
 
 ```bash
 .venv/bin/python scripts/run_verification_matrix.py --scenario-count 50
+```
+
+Run matrix + trace persistence + suggestion block:
+
+```bash
+.venv/bin/python scripts/run_verification_matrix.py \
+  --scenario-count 50 \
+  --adaptive \
+  --adaptive-rounds 1 \
+  --adaptive-budget 20 \
+  --workers 4 \
+  --suggest-settings \
+  --trace-dir traces
+```
+
+Replay one recorded scenario from trace:
+
+```bash
+.venv/bin/python scripts/replay_trace_case.py traces/<run_id>.json --scenario-id <scenario_id>
+```
+
+Export eval fixture from trace:
+
+```bash
+.venv/bin/python scripts/export_eval_case.py traces/<run_id>.json --out eval_case.json
+```
+
+Run adaptive matrix + setting suggestions:
+
+```bash
+.venv/bin/python scripts/run_verification_matrix.py \
+  --scenario-count 50 \
+  --adaptive \
+  --adaptive-rounds 1 \
+  --adaptive-budget 20 \
+  --workers 4 \
+  --suggest-settings
+```
+
+Sample adaptive/suggestion output:
+
+```json
+{
+  "verification": {
+    "adaptive_cycles": 1,
+    "candidate_scenarios": [
+      "adaptive_muddy_high_loss_low_critical_dropout_seed_51"
+    ],
+    "adaptive_metadata": [
+      {
+        "cycle": 1,
+        "generated_candidates": 2,
+        "seed_range": [51, 71],
+        "target_invariants": ["latency_within_budget"],
+        "failed_in_cycle": 1,
+        "passed_in_cycle": 1
+      }
+    ]
+  },
+  "setting_suggestions": {
+    "reason": "Blocked run can improve by trying one option at a time, then re-running verification. Current risk=0.67, pass_rate=0.67.",
+    "confidence": 0.9,
+    "mutually_exclusive_options": [
+      {
+        "description": "Reduce canary blast radius to lower tail latency risk.",
+        "changes": {
+          "deployment": {
+            "percentage": 4
+          }
+        }
+      }
+    ]
+  }
+}
 ```
 
 Required local `.env`:
@@ -299,6 +378,8 @@ swarmforge/
 scripts/
   run_openai_harness.py
   run_verification_matrix.py
+  replay_trace_case.py
+  export_eval_case.py
 docs/
   implementation-steps.md
   sprint-1-product-contract.md

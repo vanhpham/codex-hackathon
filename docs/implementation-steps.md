@@ -163,6 +163,8 @@ Primary outputs:
 - `RiskReport`
 - CLI runner for verification matrix
 - tests for pass/fail aggregation
+- adaptive counterexample pipeline (optional)
+- candidate metadata + suggestions report integration
 
 Key requirements:
 
@@ -173,14 +175,41 @@ Key requirements:
 - Invariant failures captured with reasons.
 - Aggregated pass rate and risk score.
 - Final decision: `ready_for_canary` or `blocked`.
+- Adaptive mode with optional worker pool and bounded adaptive rounds.
+- Candidate suggestions must keep hard bounds.
 
 Acceptance:
 
 ```text
 Complete. Good plan passes the verification matrix.
 Risky plan fails specific scenarios with clear reasons.
+Adaptive candidates are bounded, replayable, and policy-driven.
 Runner can execute 50+ local simulations quickly.
 Risk report is JSON-serializable and replayable.
+```
+
+## Sprint 4.5: Adaptive Verification And Suggestion
+
+Goal:
+
+```text
+Move from static matrix replay to policy-driven adaptive stress and safe setting recommendations.
+```
+
+Primary outputs:
+
+- `adaptive_verification.py` for bounded counterexample candidates
+- `setting_suggester.py` for mutually-exclusive settings proposals
+- Worker-pool execution for batch verification
+- Adaptive report metadata for replay and audit
+
+Acceptance:
+
+```text
+Adaptive mode is disabled by default.
+LLM scenario generation is bounded and schema-validated.
+LLM-down mode still completes via deterministic fallback.
+Suggestions only use safe options within established constraints.
 ```
 
 ## Sprint 5: Trace/Eval Records And Dashboard
@@ -202,17 +231,19 @@ Primary outputs:
 
 Key requirements:
 
-- Every run records prompt, model plan, schema result, verification matrix, risk report, and final decision.
-- Failed scenarios can be replayed by seed.
+  - Every run records prompt, model plan, schema result, verification matrix, risk report, and final decision.
+  - Failed scenarios can be replayed by seed.
+  - Adaptive and suggestion metadata are included in stored traces.
 - Demo can show the difference between schema rejection and verification rejection.
 - Dashboard should emphasize engineering evidence, not marketing UI.
 
 Acceptance:
 
 ```text
-User can run a prompt and inspect why the harness accepted or blocked it.
-At least one successful plan and one blocked plan are saved as eval records.
+Sprint5 run artifacts can be inspected after every verification execution.
+Successful and blocked verification outcomes are both saved as traces.
 Replay command reproduces a failed scenario.
+Eval export includes scenario-level input/expected metadata.
 ```
 
 ## Sprint 6: MQTT Edge Loop And Canary Runtime

@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Any
 
 from swarmforge.invariants import check_invariants
 from swarmforge.risk import InvariantFailure, RiskReport, VerificationCaseResult
@@ -12,6 +15,10 @@ from swarmforge.scenarios import (
 )
 from swarmforge.schemas import OptimizationPlan
 from swarmforge.simulator import simulate_plan
+from swarmforge.adaptive_verification import generate_counterexample_candidates
+
+
+DEFAULT_ADAPTIVE_WORKERS = max(1, min(4, (os.cpu_count() or 2) // 2))
 
 
 @dataclass(frozen=True)
@@ -25,16 +32,90 @@ def run_verification_matrix(
     scenarios: list[ScenarioSpec] | None = None,
     scenario_count: int = 50,
     policy: VerificationPolicy | None = None,
+    enable_adaptive: bool = False,
+    workers: int = DEFAULT_ADAPTIVE_WORKERS,
+    adaptive_budget: int = 20,
+    adaptive_rounds: int = 1,
+    seed_start: int = 1,
 ) -> RiskReport:
     policy = policy or VerificationPolicy()
-    scenarios = scenarios or generate_scenario_matrix(count=scenario_count)
-    case_results = tuple(_run_case(plan, scenario) for scenario in scenarios)
-    return build_risk_report(case_results, policy)
+    workers = max(1, workers)
+    scenarios = scenarios or generate_scenario_matrix(count=scenario_count, seed_start=seed_start)
+    scenario_list = list(scenarios)
+
+    case_results = _run_case_batch(plan, scenario_list, workers)
+    executed_scenarios = scenario_list
+    adaptive_cycles = 0
+    candidate_scenarios: tuple[str, ...] = ()
+    adaptive_metadata: tuple[dict[str, Any], ...] = ()
+
+    if enable_adaptive and adaptive_rounds > 0:
+        all_failed = tuple(result for result in case_results if not result.accepted)
+
+        for cycle in range(adaptive_rounds):
+            if not all_failed:
+                break
+
+            target_invariants = _critical_failure_names(all_failed)
+            base_seed = seed_start + len(scenario_list) + (cycle * adaptive_budget)
+            seed_range = (base_seed, base_seed + adaptive_budget)
+            candidates = generate_counterexample_candidates(
+                plan=plan,
+                failed_cases=all_failed,
+                target_invariants=target_invariants,
+                budget=adaptive_budget,
+                seed_range=seed_range,
+            )
+
+            if not candidates:
+                break
+
+            # Avoid duplicate re-execution on fallback or repeated LLM output.
+            seen = {result.scenario_id for result in case_results}
+            filtered_candidates: list[ScenarioSpec] = []
+            for candidate in candidates:
+                if candidate.scenario_id in seen:
+                    continue
+                filtered_candidates.append(candidate)
+                seen.add(candidate.scenario_id)
+            candidates = tuple(filtered_candidates)
+            if not candidates:
+                break
+
+            candidate_results = _run_case_batch(plan, candidates, workers)
+            case_results += candidate_results
+            executed_scenarios += candidates
+            candidate_scenarios += tuple(result.scenario_id for result in candidate_results)
+            adaptive_cycles += 1
+            adaptive_metadata += (
+                {
+                    "cycle": cycle + 1,
+                    "generated_candidates": len(candidates),
+                    "seed_range": list(seed_range),
+                    "target_invariants": list(target_invariants),
+                    "failed_in_cycle": sum(1 for result in candidate_results if not result.accepted),
+                    "passed_in_cycle": sum(1 for result in candidate_results if result.accepted),
+                },
+            )
+            all_failed = tuple(result for result in candidate_results if not result.accepted)
+
+    return build_risk_report(
+        case_results,
+        policy,
+        executed_scenarios=tuple(spec.to_dict() for spec in executed_scenarios),
+        adaptive_cycles=adaptive_cycles,
+        candidate_scenarios=candidate_scenarios,
+        adaptive_metadata=adaptive_metadata,
+    )
 
 
 def build_risk_report(
     case_results: tuple[VerificationCaseResult, ...],
     policy: VerificationPolicy | None = None,
+    executed_scenarios: tuple[dict[str, Any], ...] | None = None,
+    adaptive_cycles: int = 0,
+    candidate_scenarios: tuple[str, ...] | None = None,
+    adaptive_metadata: tuple[dict[str, Any], ...] | None = None,
 ) -> RiskReport:
     if not case_results:
         raise ValueError("case_results must not be empty")
@@ -67,7 +148,42 @@ def build_risk_report(
         critical_failures=critical_failures,
         decision="ready_for_canary" if passed else "blocked",
         case_results=case_results,
+        executed_scenarios=executed_scenarios or (),
+        adaptive_cycles=adaptive_cycles,
+        candidate_scenarios=candidate_scenarios or (),
+        adaptive_metadata=adaptive_metadata or (),
     )
+
+
+def _run_case_batch(
+    plan: OptimizationPlan,
+    scenarios: list[ScenarioSpec] | tuple[ScenarioSpec, ...],
+    workers: int,
+) -> tuple[VerificationCaseResult, ...]:
+    scenario_list = list(scenarios)
+    if workers <= 1 or len(scenario_list) <= 1:
+        return tuple(_run_case(plan, scenario) for scenario in scenario_list)
+
+    workers = min(workers, len(scenario_list))
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        future_to_index: dict = {
+            executor.submit(_run_case, plan, scenario): index
+            for index, scenario in enumerate(scenario_list)
+        }
+        results: list[VerificationCaseResult | None] = [None] * len(scenario_list)
+
+        for future in as_completed(future_to_index):
+            index = future_to_index[future]
+            results[index] = future.result()
+
+    # type: ignore[return-value]
+    return tuple(result for result in results if result is not None)
+
+
+def run_verification_case(plan: OptimizationPlan, scenario: ScenarioSpec) -> VerificationCaseResult:
+    """Public helper for replaying a single case with the same deterministic logic."""
+
+    return _run_case(plan, scenario)
 
 
 def _run_case(plan: OptimizationPlan, scenario: ScenarioSpec) -> VerificationCaseResult:

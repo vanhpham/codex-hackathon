@@ -9,6 +9,16 @@ One LLM plan is not enough.
 The harness must try to falsify it across many edge-swarm conditions.
 ```
 
+Sprint 4.5 extends this with adaptive, policy-driven stress:
+
+```text
+deterministic base matrix replay
+--> failed-case summarization
+--> bounded counterexample candidates
+--> candidate replay by controlled seed budget
+--> evidence-rich report metadata
+```
+
 ## Sprint Goal
 
 Build:
@@ -127,6 +137,25 @@ Generation rules:
 - always include at least one sensor-dropout case
 - keep matrix deterministic for replay
 
+### Adaptive Verification (Sprint 4.5)
+
+Adaptive verification is enabled via CLI:
+
+```text
+--adaptive
+--workers
+--adaptive-rounds
+--adaptive-budget
+```
+
+How it works:
+
+- run deterministic base cases and collect failures
+- ask a schema-bound generator for counterexample candidates (LLM if available, deterministic fallback otherwise)
+- dedupe candidates against previously run scenarios
+- execute candidates in parallel worker batches
+- store cycle metadata and candidate IDs for full replay
+
 ## Acceptance Policy
 
 Pass when:
@@ -151,26 +180,39 @@ latency exceeds budget in worst-case scenario
 
 ## CLI Requirement
 
-Add:
+Implemented command:
 
 ```text
 scripts/run_verification_matrix.py
 ```
 
-Expected behavior:
+Core flags:
 
 ```text
-load prompt or sample plan
-run OpenAI harness or fake plan
-generate scenario matrix
-run verification
-print JSON risk report
+--scenario-count      number of deterministic base cases (default 50)
+--seed-start          first seed for base matrix (default 1)
+--adaptive            enable counterexample generation cycles
+--workers             worker count for verification cases
+--adaptive-rounds     adaptive rounds after base failures
+--adaptive-budget     max candidates per adaptive round
+--suggest-settings    append `SettingSuggestionReport`
+--max-suggestions     cap suggestion count
+--trace-dir           persist trace JSON to a directory (default `.swarmforge_traces`)
+--trace-id            set explicit run_id
+--no-trace            disable trace write
 ```
 
-Implemented command:
+Example:
 
 ```text
-.venv/bin/python scripts/run_verification_matrix.py --scenario-count 50
+.venv/bin/python scripts/run_verification_matrix.py --scenario-count 50 --adaptive --adaptive-rounds 1 --adaptive-budget 20 --workers 4 --suggest-settings
+```
+
+Trace + replay example:
+
+```text
+.venv/bin/python scripts/run_verification_matrix.py --scenario-count 50 --adaptive --trace-dir traces
+.venv/bin/python scripts/replay_trace_case.py traces/<run_id>.json --scenario-id <failed_scenario_id>
 ```
 
 Expected default result:
@@ -191,6 +233,7 @@ failed_scenarios: recorded for replay
 | High-loss network case | failed scenario recorded |
 | Deterministic seed replay | same report twice |
 | Critical invariant failure | blocked regardless of pass rate |
+| Adaptive fail generation replay | candidate IDs + metadata are deterministic for same run seed |
 
 ## Definition Of Done
 
@@ -204,15 +247,26 @@ Sprint 4 is complete when:
 - risky plan is blocked
 - tests cover deterministic replay and aggregation
 
+Sprint 4.5 is complete when:
+
+- adaptive candidates are bounded, deduplicated, and reproducible
+- LLM-based generator failures always fall back to deterministic generation
+- candidate IDs and cycle metadata are included in the final report
+- worker pool execution preserves result order and report consistency
+
 Current implementation files:
 
 ```text
 swarmforge/scenarios.py
 swarmforge/invariants.py
 swarmforge/risk.py
+swarmforge/adaptive_verification.py
 swarmforge/verification.py
+swarmforge/setting_suggester.py
 scripts/run_verification_matrix.py
 tests/test_scenarios.py
+tests/test_adaptive_verification.py
+tests/test_setting_suggester.py
 tests/test_verification.py
 ```
 

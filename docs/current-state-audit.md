@@ -10,15 +10,7 @@ Current working branch:
 sprint-4-verification-runner
 ```
 
-Important recent commits:
-
-```text
-a39125e feat: add verification scenario models
-ef1c8e3 docs: add current state audit
-619a62e Merge pull request #2 from vanhpham/sprint-3-openai-harness
-cb572ef docs: plan sprint 4 mqtt edge loop
-14c2de8 docs: pivot to AI verification harness
-```
+Current branch includes the verification hardening stack through Sprint 5 (adaptive + trace).
 
 Interpretation:
 
@@ -36,8 +28,9 @@ If a clean PR history matters later, squash or rebase the branch before opening 
 | Sprint 1 | Product contract and typed control plan | Docs updated for AI verification harness and broader control knobs | Aligned |
 | Sprint 2 | Local simulator and baseline scoring | Implemented simulator, scoring, and tests | Aligned |
 | Sprint 3 | OpenAI structured harness | Implemented Responses API structured plan path, fake-client tests, live smoke command | Aligned |
-| Sprint 4 | Scalable verification runner | Implemented scenario matrix, invariants, verification runner, risk report, CLI, and tests | Aligned |
-| Sprint 5 | Trace/eval records and dashboard | Docs/spec complete, implementation later | Planned |
+| Sprint 4 | Scalable verification runner | Implemented scenario matrix, invariants, risk report, CLI, and tests | Aligned |
+| Sprint 4.5 | Adaptive verification + suggestions | Added bounded adaptive generation, worker pool, suggestion engine, and reporting metadata | Completed |
+| Sprint 5 | Trace/eval records and dashboard | Trace persistence, replay, and eval export are implemented | Completed |
 | Sprint 6 | MQTT edge loop and canary runtime | Docs/spec moved from old Sprint 4, implementation later | Planned |
 
 ## Current Code State
@@ -53,13 +46,21 @@ swarmforge/simulator.py
 swarmforge/scenarios.py
 swarmforge/invariants.py
 swarmforge/risk.py
+swarmforge/adaptive_verification.py
+swarmforge/setting_suggester.py
 swarmforge/verification.py
+swarmforge/traces.py
 scripts/run_openai_harness.py
 scripts/run_verification_matrix.py
+scripts/replay_trace_case.py
+scripts/export_eval_case.py
 tests/test_harness.py
 tests/test_simulator.py
 tests/test_scenarios.py
 tests/test_verification.py
+tests/test_adaptive_verification.py
+tests/test_setting_suggester.py
+tests/test_verification_adaptive.py
 requirements.txt
 ```
 
@@ -72,12 +73,11 @@ prompt -> OpenAI structured plan -> schema gate -> baseline simulator -> verific
 They do not yet support:
 
 ```text
-Trace persistence
-Dashboard
+Live dashboard UI
 MQTT runtime
 ```
 
-That gap is expected after Sprint 4.
+That gap is expected as Sprint 6 hardening is next.
 
 ## Known Workspace Issue
 
@@ -109,10 +109,12 @@ Unit tests currently pass in the local workspace:
 .venv/bin/python -m unittest
 ```
 
-Sprint 4 smoke command:
+Trace + replay command:
 
-```text
-.venv/bin/python scripts/run_verification_matrix.py --scenario-count 50
+```bash
+.venv/bin/python scripts/run_verification_matrix.py --scenario-count 50 --trace-dir traces
+.venv/bin/python scripts/replay_trace_case.py traces/<run_id>.json --scenario-id <scenario_id>
+.venv/bin/python scripts/export_eval_case.py traces/<run_id>.json --out eval_case.json
 ```
 
 Important nuance:
@@ -122,21 +124,11 @@ Important nuance:
 
 ## Gaps To Close Next
 
-Sprint 5 implementation should add:
+Sprint 6 implementation should add:
 
-```text
-swarmforge/traces.py
-swarmforge/evals.py
-scripts/replay_trace.py
-scripts/export_eval_case.py
-```
-
-Minimum Sprint 5 acceptance:
-
-- accepted and blocked runs save trace records
-- failed scenario seeds are replayable
-- eval-case export exists
-- terminal/dashboard summary explains risk report
+- ota payload mapping
+- canary edge dispatch
+- deployment guardrails with real runtime feedback
 
 ## Final Audit Verdict
 
@@ -145,7 +137,7 @@ The committed project direction now matches the hackathon track better than the 
 Status:
 
 ```text
-Sprints 1-4: aligned and implemented.
-Sprint 5-6: planned and documented.
+Sprints 1-5: aligned and implemented.
+Sprint 6: planned and documented.
 Workspace: one untracked MQTT artifact set should be cleaned or intentionally deferred.
 ```
