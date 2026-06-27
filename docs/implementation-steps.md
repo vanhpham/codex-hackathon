@@ -26,6 +26,12 @@ Sprint 2 is tracked in:
 docs/sprint-2-simulator-plan.md
 ```
 
+Sprint 3 is tracked in:
+
+```text
+docs/sprint-3-openai-harness.md
+```
+
 ## Phase 0: Product Decision
 
 Decide the core promise:
