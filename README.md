@@ -281,10 +281,11 @@ Run canary demo from a saved trace:
 Sprint 6 runtime + Sprint 7 web dashboard (runtime visualization):
 
 ```bash
-# start full runtime stack: broker + dashboard + edge-node fleet (default 8 nodes)
+# start full runtime stack: broker + dashboard + standalone agents (default 8 nodes)
 docker compose -f docker/docker-compose.yml up -d --build
 
-# optional: open dashboard at http://127.0.0.1:8080
+# default dashboard nodes are `node-*`; standalone agents use `edge-*` IDs.
+# open dashboard at http://127.0.0.1:8080
 ```
 
 If you prefer fully in-memory runtime (no Docker required), switch to:

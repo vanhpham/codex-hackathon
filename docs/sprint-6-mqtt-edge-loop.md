@@ -147,7 +147,7 @@ Canary demo from a saved trace:
 
 ## Sprint 6 Runtime (Docker + Web)
 
-Start full local stack (broker + dashboard + edge-node fleet):
+Start full local stack (broker + dashboard + standalone edge-node agents):
 
 ```bash
 docker compose -f docker/docker-compose.yml up -d --build
@@ -165,6 +165,9 @@ SWARM_NODE_COUNT=12 SWARM_TELEMETRY_INTERVAL=1.0 \
 SWARM_HEALTH_CURVE=steady \
 docker compose -f docker/docker-compose.yml up -d --build
 ```
+
+Default dashboard nodes (for UI runtime) still use `node-*` IDs.
+Standalone agents use `edge-*` IDs so they don't collide with dashboard targets.
 
 ## Definition Of Done
 
