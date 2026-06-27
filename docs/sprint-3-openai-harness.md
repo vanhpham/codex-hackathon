@@ -34,6 +34,8 @@ OPENAI_MODEL=gpt-5.5
 
 `OPENAI_MODEL` should remain configurable so the demo can use the latest available high-capability model without code changes.
 
+Keep real keys in local `.env`. Do not put keys in `.env.example`.
+
 ## Harness Input
 
 ```json
@@ -119,6 +121,26 @@ Schema rejection example:
 | Unsafe rollout | Full fleet first action | `schema_rejected` |
 | Slow filter | Window `15` with tight latency | `simulation_rejected` |
 | Malformed JSON | Missing required fields | `schema_rejected` |
+
+## Local Commands
+
+Unit tests:
+
+```text
+.venv/bin/python -m unittest
+```
+
+Live OpenAI SDK smoke test:
+
+```text
+.venv/bin/python scripts/run_openai_harness.py
+```
+
+Verified Sprint 3 live path:
+
+```text
+OpenAI structured plan -> schema valid -> simulation accepted -> ready_for_canary
+```
 
 ## Definition of Done
 
