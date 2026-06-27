@@ -20,6 +20,12 @@ Sprint 1 is tracked in:
 docs/sprint-1-product-contract.md
 ```
 
+Sprint 2 is tracked in:
+
+```text
+docs/sprint-2-simulator-plan.md
+```
+
 ## Phase 0: Product Decision
 
 Decide the core promise:
