@@ -89,6 +89,38 @@ class Sprint7WebControllerTest(unittest.TestCase):
             finally:
                 del controller
 
+    def test_operator_demo_pipeline_builds_ready_payload_and_trace(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            controller = FleetController(
+                node_count=2,
+                broker_mode="in-memory",
+                telemetry_interval=3600.0,
+                broker_host="localhost",
+                broker_port=1883,
+                telemetry_samples_per_node=1,
+                node_prefix="n-",
+                node_id_width=2,
+                trace_dir=Path(tmpdir),
+            )
+            try:
+                result = controller.run_operator_plan(
+                    "demo prompt",
+                    planner_mode="demo",
+                    scenario_count=50,
+                    workers=1,
+                    adaptive=False,
+                )
+                self.assertEqual(result["verification"]["decision"], "ready_for_canary")
+                self.assertIsNotNone(result["ready_payload"])
+                self.assertEqual(
+                    result["ready_payload"]["verification"]["decision"],
+                    "ready_for_canary",
+                )
+                trace_path = Path(result["trace"]["path"])
+                self.assertTrue(trace_path.exists())
+            finally:
+                del controller
+
 
 if __name__ == "__main__":
     unittest.main()

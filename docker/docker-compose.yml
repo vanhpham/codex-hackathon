@@ -9,6 +9,11 @@ services:
       - "1883:1883"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -p 1883 -t swarmforge/healthcheck -m ok"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
 
   swarmforge-dashboard:
     container_name: swarmforge-dashboard
@@ -20,7 +25,10 @@ services:
     networks:
       - swarmforge
     depends_on:
-      - mosquitto
+      mosquitto:
+        condition: service_healthy
+    env_file:
+      - ../.env
     environment:
       - SWARM_NODE_COUNT
       - SWARM_TELEMETRY_INTERVAL
@@ -49,7 +57,8 @@ services:
     networks:
       - swarmforge
     depends_on:
-      - mosquitto
+      mosquitto:
+        condition: service_healthy
     environment:
       - SWARM_NODE_COUNT
       - SWARM_HEALTH_CURVE
@@ -74,6 +83,8 @@ services:
     restart: "no"
     networks:
       - swarmforge
+    env_file:
+      - ../.env
     profiles:
       - tools
     environment:

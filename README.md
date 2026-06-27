@@ -288,6 +288,16 @@ docker compose -f docker/docker-compose.yml up -d --build
 # open dashboard at http://127.0.0.1:8080
 ```
 
+The dashboard reads `.env` through Docker Compose, so `OPENAI_API_KEY` and
+`OPENAI_MODEL` are available to the Operator Console by default. In the UI:
+
+```text
+Engineer prompt -> Generate + Verify -> Deploy Verified Canary
+```
+
+The deploy button still requires a harness-produced
+`verification.decision=ready_for_canary` payload.
+
 If you prefer fully in-memory runtime (no Docker required), switch to:
 
 ```bash

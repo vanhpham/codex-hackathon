@@ -15,7 +15,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from swarmforge.edge_runtime import EdgeNode
-from swarmforge.mqtt_transport import MosquittoDockerTransport, RuntimeTransportUnavailable
+from swarmforge.mqtt_transport import PahoMqttTransport, RuntimeTransportUnavailable
 
 
 def _utc_now() -> str:
@@ -70,7 +70,7 @@ def main() -> None:
     signal.signal(signal.SIGTERM, stop)
 
     try:
-        transport = MosquittoDockerTransport(
+        transport = PahoMqttTransport(
             broker_host=args.broker_host,
             broker_port=args.broker_port,
         )

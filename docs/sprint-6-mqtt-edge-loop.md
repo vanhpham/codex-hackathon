@@ -152,6 +152,14 @@ Start full local stack (broker + dashboard + standalone edge-node agents):
 ```bash
 docker compose -f docker/docker-compose.yml up -d --build
 ```
+
+The dashboard reads `.env` through Compose. With `OPENAI_API_KEY` present,
+the Operator Console defaults to real OpenAI planning:
+
+```text
+engineer prompt -> OpenAI structured plan -> verification matrix -> trace -> canary deploy
+```
+
 Stop stack:
 
 ```bash

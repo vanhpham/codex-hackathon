@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import signal
 import sys
 import threading
@@ -22,9 +23,48 @@ from swarmforge.edge_runtime import (
     dispatch_to_canary,
     evaluate_canary_dispatch,
 )
-from swarmforge.mqtt_transport import MosquittoDockerTransport, RuntimeTransportUnavailable
+from swarmforge.env import load_env_file
+from swarmforge.harness import OpenAIResponsesPlanClient, PlanClient, run_harness
+from swarmforge.mqtt_transport import PahoMqttTransport, RuntimeTransportUnavailable
 from swarmforge.ota import build_ota_config
-from swarmforge.traces import load_trace, replay_trace_case
+from swarmforge.scenarios import ScenarioSpec, generate_scenario_matrix
+from swarmforge.schemas import OptimizationPlan
+from swarmforge.setting_suggester import suggest_setting_adjustments
+from swarmforge.traces import build_verification_trace, load_trace, make_run_id, replay_trace_case, save_trace
+from swarmforge.verification import DEFAULT_ADAPTIVE_WORKERS, run_verification_matrix
+
+
+DEFAULT_OPERATOR_PROMPT = (
+    "Xe dang vao vung bun lay, rung lac manh. Hay giam sample rate xuong 2Hz, "
+    "them median filter cho gia toc, va chuyen log level sang WARNING."
+)
+
+DEMO_PLAN = {
+    "intent": "reduce_noise_and_bandwidth",
+    "target_metric": "accelerometer",
+    "sampling_rate_hz": 2,
+    "log_level": "WARNING",
+    "filter": {"type": "median", "window_size": 5},
+    "telemetry_collection": {
+        "metrics": ["accelerometer", "temperature", "battery"],
+        "aggregation_window_seconds": 5,
+        "publish_mode": "summary_and_anomalies",
+        "max_payload_kbps": 8,
+    },
+    "deployment": {"strategy": "canary", "percentage": 5, "observation_window_seconds": 10},
+    "rollback": {
+        "enabled": True,
+        "max_latency_ms": 250,
+        "max_error_rate": 0.02,
+        "min_telemetry_health": 0.95,
+    },
+}
+
+
+class DemoPlanClient:
+    def create_plan(self, prompt: str) -> dict[str, Any]:
+        del prompt
+        return dict(DEMO_PLAN)
 
 
 INDEX_HTML = """<!doctype html>
@@ -191,6 +231,34 @@ INDEX_HTML = """<!doctype html>
       border-color: #7ca2ff;
     }
     .active { border-color: #2f62ff; box-shadow: 0 0 0 1px #2f62ff33; }
+    .operator-grid {
+      display: grid;
+      grid-template-columns: minmax(320px, 1fr) minmax(320px, 1fr);
+      gap: 12px;
+    }
+    .operator-controls {
+      display: grid;
+      gap: 8px;
+    }
+    .operator-controls textarea {
+      min-height: 116px;
+    }
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(90px, 1fr));
+      gap: 8px;
+      align-items: end;
+    }
+    .mini-grid label {
+      display: grid;
+      gap: 4px;
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+    @media (max-width: 960px) {
+      .operator-grid { grid-template-columns: 1fr; }
+      .mini-grid { grid-template-columns: repeat(2, minmax(120px, 1fr)); }
+    }
   </style>
 </head>
 <body>
@@ -199,6 +267,41 @@ INDEX_HTML = """<!doctype html>
     <p class="muted">Visualize verification-safe canary runtime, fleet telemetry, and trace evidence in one place.</p>
 
     <div class="summary" id="summaryCards"></div>
+
+    <section class="panel col-12">
+      <h3>Operator Console</h3>
+      <div class="operator-grid">
+        <div class="operator-controls">
+          <textarea id="operatorPrompt">Xe dang vao vung bun lay, rung lac manh. Hay giam sample rate xuong 2Hz, them median filter cho gia toc, va chuyen log level sang WARNING.</textarea>
+          <div class="mini-grid">
+            <label>Planner
+              <select id="plannerMode">
+                <option value="openai" selected>OpenAI</option>
+                <option value="demo">Demo</option>
+              </select>
+            </label>
+            <label>Scenarios
+              <input id="operatorScenarioCount" type="number" min="5" max="500" value="50" />
+            </label>
+            <label>Workers
+              <input id="operatorWorkers" type="number" min="1" max="16" value="4" />
+            </label>
+            <label>Adaptive
+              <select id="operatorAdaptive">
+                <option value="true" selected>On</option>
+                <option value="false">Off</option>
+              </select>
+            </label>
+          </div>
+          <div class="toolbar">
+            <button onclick="runOperatorPlan()">Generate + Verify</button>
+            <button onclick="deployVerifiedPlan()">Deploy Verified Canary</button>
+            <span id="operatorState" class="muted">Idle</span>
+          </div>
+        </div>
+        <pre class="log" id="operatorResult">No operator run yet.</pre>
+      </div>
+    </section>
 
     <div class="row">
       <section class="panel col-8">
@@ -278,6 +381,7 @@ INDEX_HTML = """<!doctype html>
     let lastState = {};
     let traces = [];
     let selectedTrace = "";
+    let latestReadyPayload = null;
 
     async function fetchJson(url, options) {
       const response = await fetch(url, options);
@@ -484,6 +588,58 @@ INDEX_HTML = """<!doctype html>
       }
     }
 
+    async function runOperatorPlan() {
+      const prompt = document.getElementById("operatorPrompt").value;
+      const plannerMode = document.getElementById("plannerMode").value;
+      const scenarioCount = Number(document.getElementById("operatorScenarioCount").value);
+      const workers = Number(document.getElementById("operatorWorkers").value);
+      const adaptive = document.getElementById("operatorAdaptive").value === "true";
+      document.getElementById("operatorState").textContent = "running...";
+      document.getElementById("operatorResult").textContent = "Generating plan, running schema gate, verification matrix, and trace save...";
+
+      try {
+        const result = await fetchJson("/api/operator/run", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            prompt,
+            planner_mode: plannerMode,
+            scenario_count: scenarioCount,
+            workers,
+            adaptive,
+            suggest_settings: true,
+          }),
+        });
+        latestReadyPayload = result.ready_payload || null;
+        document.getElementById("operatorResult").textContent = JSON.stringify(result, null, 2);
+        document.getElementById("operatorState").textContent = result.ready_payload ? "ready for canary" : "blocked";
+        if (latestReadyPayload) {
+          document.getElementById("payload").value = JSON.stringify(latestReadyPayload, null, 2);
+          document.getElementById("run_id").value = latestReadyPayload.run_id;
+          document.getElementById("percentage").value = latestReadyPayload.plan.deployment.percentage;
+        }
+        await refreshAll();
+      } catch (err) {
+        latestReadyPayload = null;
+        document.getElementById("operatorResult").textContent = String(err);
+        document.getElementById("operatorState").textContent = "failed";
+      }
+    }
+
+    async function deployVerifiedPlan() {
+      if (!latestReadyPayload) {
+        try {
+          latestReadyPayload = JSON.parse(document.getElementById("payload").value);
+        } catch (err) {
+          document.getElementById("operatorState").textContent = "no verified payload";
+          return;
+        }
+      }
+      document.getElementById("payload").value = JSON.stringify(latestReadyPayload, null, 2);
+      await submitDispatch();
+      document.getElementById("operatorState").textContent = "dispatch submitted";
+    }
+
     async function replayScenario() {
       const runId = document.getElementById("replayRunId").value;
       const scenarioId = document.getElementById("replayScenarioId").value;
@@ -538,6 +694,7 @@ class FleetController:
     last_dispatch: dict[str, Any] | None = None
     last_evaluation: dict[str, Any] | None = None
     events: list[dict[str, Any]] = field(default_factory=list)
+    last_operator_result: dict[str, Any] | None = None
     last_event_at: float = 0.0
     lock: threading.Lock = field(default_factory=threading.RLock)
 
@@ -552,7 +709,7 @@ class FleetController:
             nodes = [EdgeNode(node_id=node_id, broker=broker) for node_id in self.node_ids]
         else:
             try:
-                transport = MosquittoDockerTransport(
+                transport = PahoMqttTransport(
                     broker_host=self.broker_host,
                     broker_port=self.broker_port,
                 )
@@ -620,6 +777,7 @@ class FleetController:
                 "last_evaluation": self.last_evaluation,
                 "telemetry_samples_per_node": self.telemetry_samples_per_node,
                 "verification_metrics": self._verification_metrics(),
+                "last_operator_result": self.last_operator_result,
                 "events": self.events[-60:],
             }
 
@@ -635,6 +793,115 @@ class FleetController:
             "decision": self.last_evaluation.get("decision"),
             "risk_score": self.last_evaluation.get("risk_score"),
         }
+
+    def run_operator_plan(
+        self,
+        prompt: str,
+        *,
+        planner_mode: str = "openai",
+        scenario_count: int = 50,
+        workers: int = DEFAULT_ADAPTIVE_WORKERS,
+        adaptive: bool = True,
+        adaptive_rounds: int = 1,
+        adaptive_budget: int = 20,
+        suggest_settings: bool = True,
+    ) -> dict[str, Any]:
+        prompt = (prompt or DEFAULT_OPERATOR_PROMPT).strip()
+        scenario_count = max(5, min(500, int(scenario_count)))
+        workers = max(1, min(16, int(workers)))
+
+        self._append_event(
+            "operator_start",
+            f"Planning via {planner_mode}; scenarios={scenario_count}; adaptive={adaptive}",
+            {"planner_mode": planner_mode, "scenario_count": scenario_count},
+        )
+
+        client: PlanClient
+        if planner_mode == "demo":
+            client = DemoPlanClient()
+        elif planner_mode == "openai":
+            client = OpenAIResponsesPlanClient()
+        else:
+            raise RuntimeError("planner_mode must be 'openai' or 'demo'")
+
+        harness = run_harness(prompt, client, run_id=make_run_id())
+        payload: dict[str, Any] = {
+            "prompt": prompt,
+            "planner_mode": planner_mode,
+            "harness": harness.to_dict(),
+        }
+
+        if harness.deployment_decision != "ready_for_canary" or harness.plan is None:
+            payload["ready_payload"] = None
+            self._record_operator_result(payload, "operator_blocked", "Operator plan blocked before verification.")
+            return payload
+
+        plan = OptimizationPlan.from_dict(harness.plan)
+        scenarios = generate_scenario_matrix(count=scenario_count, seed_start=1)
+        report = run_verification_matrix(
+            plan=plan,
+            scenarios=scenarios,
+            enable_adaptive=adaptive,
+            workers=workers,
+            adaptive_rounds=adaptive_rounds,
+            adaptive_budget=adaptive_budget,
+            seed_start=1,
+        )
+
+        setting_suggestion_report = None
+        if suggest_settings:
+            setting_suggestion_report = suggest_setting_adjustments(plan=plan, report=report)
+
+        executed_scenarios = (
+            tuple(ScenarioSpec(**spec) for spec in report.executed_scenarios)
+            if report.executed_scenarios
+            else tuple(scenarios)
+        )
+        trace = build_verification_trace(
+            plan=plan,
+            report=report,
+            scenarios=executed_scenarios,
+            run_id=harness.run_id,
+            model=os.getenv("OPENAI_MODEL", "gpt-5.5") if planner_mode == "openai" else "demo",
+            prompt=prompt,
+            setting_suggestion=setting_suggestion_report,
+        )
+        trace_path = self.trace_dir / f"{trace.run_id}.json"
+        save_trace(trace, trace_path)
+
+        ready_payload = None
+        if report.decision == "ready_for_canary":
+            ready_payload = {
+                "run_id": trace.run_id,
+                "plan": trace.plan,
+                "verification": report.to_dict(),
+                "trace": {"run_id": trace.run_id, "path": str(trace_path)},
+            }
+            if setting_suggestion_report is not None:
+                ready_payload["setting_suggestions"] = setting_suggestion_report.to_dict()
+
+        payload.update(
+            {
+                "verification": report.to_dict(),
+                "setting_suggestions": (
+                    setting_suggestion_report.to_dict() if setting_suggestion_report else None
+                ),
+                "trace": {"run_id": trace.run_id, "path": str(trace_path)},
+                "ready_payload": ready_payload,
+            }
+        )
+        event_type = "operator_ready" if ready_payload else "operator_blocked"
+        message = (
+            f"Operator run {trace.run_id}: {report.decision}, risk={report.risk_score:.3f}, "
+            f"pass_rate={report.pass_rate:.3f}"
+        )
+        self._record_operator_result(payload, event_type, message)
+        return payload
+
+    def _record_operator_result(self, payload: dict[str, Any], event_type: str, message: str) -> None:
+        with self.lock:
+            self.last_operator_result = payload
+        self._append_event(event_type, message, {"run_id": payload.get("harness", {}).get("run_id")})
 
     def run_dispatch(self, ready_payload: dict[str, Any], percentage: float) -> dict[str, Any]:
         with self.lock:
@@ -844,6 +1111,25 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 self._send_json({"error": str(exc)}, status=500)
             return
 
+        if parsed.path == "/api/operator/run":
+            try:
+                result = self.controller.run_operator_plan(
+                    prompt=str(request.get("prompt") or DEFAULT_OPERATOR_PROMPT),
+                    planner_mode=str(request.get("planner_mode") or "openai"),
+                    scenario_count=int(request.get("scenario_count", 50)),
+                    workers=int(request.get("workers", DEFAULT_ADAPTIVE_WORKERS)),
+                    adaptive=bool(request.get("adaptive", True)),
+                    adaptive_rounds=int(request.get("adaptive_rounds", 1)),
+                    adaptive_budget=int(request.get("adaptive_budget", 20)),
+                    suggest_settings=bool(request.get("suggest_settings", True)),
+                )
+                self._send_json(result)
+            except (KeyError, TypeError, ValueError) as exc:
+                self._send_json({"error": f"invalid request body: {exc}"}, status=400)
+            except Exception as exc:
+                self._send_json({"error": str(exc)}, status=500)
+            return
+
         if parsed.path == "/api/replay":
             try:
                 run_id = request.get("run_id")
@@ -867,6 +1153,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
 
 def main() -> None:
+    load_env_file()
     parser = argparse.ArgumentParser(description="Sprint 7 web dashboard for runtime visualization.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8080)
