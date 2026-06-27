@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from typing import Any, Callable, Protocol
 
@@ -78,6 +79,7 @@ class EdgeNode:
         event = {
             "node_id": self.node_id,
             "event": "config_applied" if self.current_config else "config_rejected",
+            "ts": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         }
         if self.current_config is not None:
             event.update(
@@ -120,6 +122,7 @@ class EdgeNode:
             "node_id": self.node_id,
             "sampling_rate_hz": sampling_rate_hz,
             "telemetry_health": telemetry_health,
+            "ts": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         }
         self.telemetry_history.append(payload)
         if self.broker is not None:

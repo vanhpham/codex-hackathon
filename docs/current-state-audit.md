@@ -10,11 +10,11 @@ Current working branch:
 sprint-6
 ```
 
-Current branch includes the verification hardening stack through Sprint 6.
+Current branch includes the verification hardening stack through Sprint 7.
 
 Interpretation:
 
-- `sprint-6` now includes Sprints 1-6.
+- `sprint-6` now includes Sprints 1-7.
 - Branch history contains earlier pivot commits (`14c2de8` and later hardening commits).
 - The tree is aligned with the new strategy from a real end-to-end local canary loop.
 
@@ -30,7 +30,8 @@ If a clean PR history matters later, squash or rebase the branch before opening 
 | Sprint 4 | Scalable verification runner | Implemented scenario matrix, invariants, risk report, CLI, and tests | Aligned |
 | Sprint 4.5 | Adaptive verification + suggestions | Added bounded adaptive generation, worker pool, suggestion engine, and reporting metadata | Completed |
 | Sprint 5 | Trace/eval records and dashboard | Trace persistence, replay, and eval export are implemented | Completed |
-| Sprint 6 | MQTT edge loop and canary runtime | Docker-backed transport, web runtime dashboard, and node agent flow are implemented | Completed |
+| Sprint 6 | MQTT edge loop and canary runtime | Docker-backed transport, dashboard runtime shell, and node agent flow are implemented | Completed |
+| Sprint 7 | Runtime visualization and trace operations | Full web dashboard, trace explorer, dispatch/replay controls, and compatible legacy entrypoint are implemented | Completed |
 
 ## Current Code State
 
@@ -61,6 +62,7 @@ scripts/run_canary_demo.py
 scripts/mqtt_node_agent.py
 scripts/run_sprint6_nodes.py
 scripts/sprint6_web.py
+scripts/sprint7_web.py
 tests/test_harness.py
 tests/test_simulator.py
 tests/test_scenarios.py
@@ -87,6 +89,7 @@ They also support:
 ```text
 Docker-backed MQTT transport (`swarmforge.mqtt_transport`, `docker/docker-compose.yml`)
 web dashboard (`scripts/sprint6_web.py`)
+trace-driven dashboard and replay operations (`scripts/sprint7_web.py`)
 standalone node agents (`scripts/mqtt_node_agent.py`, `scripts/run_sprint6_nodes.py`)
 ```
 
@@ -132,6 +135,7 @@ The committed project direction now matches the hackathon track: verifier-first 
 Status:
 
 ```text
-Sprints 1-6: aligned and implemented.
-Sprint 6 now includes runnable Docker-backed transport, node agents, and web dashboard entrypoints.
+Sprints 1-7: aligned and implemented.
+Sprint 6 still provides transport/runtime baseline.
+Sprint 7 adds visualization, live trace explorer, and dispatch/replay UI.
 ```

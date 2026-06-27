@@ -278,7 +278,7 @@ Run canary demo from a saved trace:
 .venv/bin/python scripts/run_canary_demo.py --trace traces/<run_id>.json --node-count 10
 ```
 
-Sprint 6 runtime (Docker MQTT + web dashboard):
+Sprint 6 runtime + Sprint 7 web dashboard (runtime visualization):
 
 ```bash
 # start local Mosquitto broker
@@ -288,10 +288,16 @@ docker compose -f docker/docker-compose.yml up -d
 .venv/bin/python scripts/run_sprint6_nodes.py --node-count 8 --broker-host localhost
 
 # run web dashboard + canary loop (embedded runtime nodes)
-.venv/bin/python scripts/sprint6_web.py --broker-mode mqtt --node-count 8 --broker-host localhost --port 8080
+.venv/bin/python scripts/sprint7_web.py --broker-mode mqtt --node-count 8 --broker-host localhost --port 8080
 ```
 
 If you prefer fully in-memory runtime (no Docker required), switch to:
+
+```bash
+.venv/bin/python scripts/sprint7_web.py --broker-mode in-memory --node-count 5
+```
+
+Backward-compatible command (kept for earlier writeups):
 
 ```bash
 .venv/bin/python scripts/sprint6_web.py --broker-mode in-memory --node-count 5
@@ -395,6 +401,7 @@ Sprint 3: OpenAI structured harness
 Sprint 4: Scalable verification runner
 Sprint 5: Trace/eval records and dashboard
 Sprint 6: MQTT edge loop and canary runtime
+Sprint 7: Runtime visualization and trace replay workflows
 ```
 
 MQTT is still valuable, but the hackathon track rewards engineering depth. The verification runner is now the core differentiator.

@@ -29,7 +29,7 @@ Sprint 6 now uses a real MQTT path locally:
 
 - Mosquitto via `docker/docker-compose.yml`
 - Runtime transport via Docker CLI (`swarmforge.mqtt_transport`)
-- Dashboard in `scripts/sprint6_web.py`
+- Dashboard in `scripts/sprint7_web.py` (alias `scripts/sprint6_web.py`)
 - Optional standalone node process in `scripts/mqtt_node_agent.py`
 
 ## Inputs
@@ -162,7 +162,7 @@ Run optional standalone node agents:
 Start dashboard (embedded nodes + MQTT mode):
 
 ```bash
-.venv/bin/python scripts/sprint6_web.py --broker-mode mqtt --node-count 8 --broker-host localhost
+.venv/bin/python scripts/sprint7_web.py --broker-mode mqtt --node-count 8 --broker-host localhost
 ```
 
 Stop broker:
