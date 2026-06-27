@@ -281,14 +281,10 @@ Run canary demo from a saved trace:
 Sprint 6 runtime + Sprint 7 web dashboard (runtime visualization):
 
 ```bash
-# start local Mosquitto broker
-docker compose -f docker/docker-compose.yml up -d
+# start full runtime stack: broker + dashboard + edge-node fleet (default 8 nodes)
+docker compose -f docker/docker-compose.yml up -d --build
 
-# optional: run N MQTT edge-node agents (each one listens to OTA and publishes telemetry)
-.venv/bin/python scripts/run_sprint6_nodes.py --node-count 8 --broker-host localhost
-
-# run web dashboard + canary loop (embedded runtime nodes)
-.venv/bin/python scripts/sprint7_web.py --broker-mode mqtt --node-count 8 --broker-host localhost --port 8080
+# optional: open dashboard at http://127.0.0.1:8080
 ```
 
 If you prefer fully in-memory runtime (no Docker required), switch to:
@@ -303,10 +299,16 @@ Backward-compatible command (kept for earlier writeups):
 .venv/bin/python scripts/sprint6_web.py --broker-mode in-memory --node-count 5
 ```
 
-Shut down broker when done:
+Shut down full stack when done:
 
 ```bash
 docker compose -f docker/docker-compose.yml down
+```
+
+Optional: run verification job in compose (one-shot, with trace output to mounted `traces`):
+
+```bash
+SWARM_SCENARIO_COUNT=50 docker compose -f docker/docker-compose.yml --profile tools up -d swarmforge-verification
 ```
 
 Run matrix + trace persistence + suggestion block:

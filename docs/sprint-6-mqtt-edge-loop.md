@@ -147,28 +147,23 @@ Canary demo from a saved trace:
 
 ## Sprint 6 Runtime (Docker + Web)
 
-Start broker:
+Start full local stack (broker + dashboard + edge-node fleet):
 
 ```bash
-docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml up -d --build
 ```
-
-Run optional standalone node agents:
-
-```bash
-.venv/bin/python scripts/run_sprint6_nodes.py --node-count 8 --broker-host localhost
-```
-
-Start dashboard (embedded nodes + MQTT mode):
-
-```bash
-.venv/bin/python scripts/sprint7_web.py --broker-mode mqtt --node-count 8 --broker-host localhost
-```
-
-Stop broker:
+Stop stack:
 
 ```bash
 docker compose -f docker/docker-compose.yml down
+```
+
+Override defaults with env:
+
+```bash
+SWARM_NODE_COUNT=12 SWARM_TELEMETRY_INTERVAL=1.0 \
+SWARM_HEALTH_CURVE=steady \
+docker compose -f docker/docker-compose.yml up -d --build
 ```
 
 ## Definition Of Done

@@ -84,14 +84,13 @@ These support:
 prompt -> OpenAI structured plan -> schema gate -> baseline simulator -> verification matrix -> risk report
 ```
 
-They also support:
+They also support a full local stack in `docker/docker-compose.yml`:
+broker + dashboard + edge-node fleet + optional verification job.
 
-```text
-Docker-backed MQTT transport (`swarmforge.mqtt_transport`, `docker/docker-compose.yml`)
-web dashboard (`scripts/sprint6_web.py`)
-trace-driven dashboard and replay operations (`scripts/sprint7_web.py`)
-standalone node agents (`scripts/mqtt_node_agent.py`, `scripts/run_sprint6_nodes.py`)
-```
+- Docker-backed MQTT transport (`swarmforge.mqtt_transport`, `docker/docker-compose.yml`)
+- web dashboard (`scripts/sprint6_web.py`)
+- trace-driven dashboard and replay operations (`scripts/sprint7_web.py`)
+- standalone node agents (`scripts/mqtt_node_agent.py`, `scripts/run_sprint6_nodes.py`)
 
 Live Docker validation is expected in environments where Docker daemon access is available.
 
