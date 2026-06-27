@@ -3,7 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Callable, Protocol
 
-from swarmforge.ota import OTAConfig, DispatchBlocked, build_ota_config_from_payload
+from swarmforge.ota import (
+    DispatchBlocked,
+    OTAConfig,
+    build_ota_config_from_payload,
+)
 from swarmforge.topics import CONTROL_OTA_TOPIC, event_topic, node_ota_topic, telemetry_topic
 from swarmforge.ota import select_canary_nodes
 
@@ -36,8 +40,9 @@ class InMemoryBroker:
     def publish(self, topic: str, payload: dict[str, Any]) -> None:
         message = {"topic": topic, "payload": payload}
         self.published_messages.append(message)
+        payload_copy = payload if isinstance(payload, dict) else {"_raw": payload}
         for handler in self.handlers.get(topic, {}).values():
-            handler(topic, dict(payload))
+            handler(topic, payload_copy)
 
     def unsubscribe(self, topic: str, token: str) -> None:
         handlers = self.handlers.get(topic, {})
@@ -84,7 +89,7 @@ class EdgeNode:
             )
         else:
             event["status"] = "rejected"
-            event["reason"] = payload.get("reason", "invalid_ota_payload")
+            event["reason"] = _coerce_reason(payload)
         self.event_history.append(event)
         if self.broker is not None:
             self.broker.publish(event_topic(self.node_id), event)
@@ -189,3 +194,85 @@ def _extract_ota_config(ready_payload: dict[str, Any]) -> OTAConfig:
     except Exception as exc:
         raise DispatchBlocked(f"invalid ready payload: {exc}") from exc
 
+
+def evaluate_canary_dispatch(
+    dispatch_report: dict[str, Any],
+    nodes: list[EdgeNode],
+    *,
+    telemetry_health_floor: float | None = None,
+) -> dict[str, Any]:
+    """Evaluate a dispatch report and canary runtime observations."""
+
+    target_nodes = list(dispatch_report.get("target_nodes", []))
+    node_map = {node.node_id: node for node in nodes}
+
+    node_reports: list[dict[str, Any]] = []
+    telemetry_samples: list[float] = []
+    min_health = None
+    all_applied = True
+
+    for node_id in target_nodes:
+        node = node_map.get(node_id)
+        last_event = node.last_event() if node is not None else None
+
+        if node is None:
+            status = "missing"
+            event = None
+            all_applied = False
+        elif last_event is None:
+            status = "silent"
+            event = None
+            all_applied = False
+        else:
+            status = (
+                "applied"
+                if last_event.get("event") == "config_applied" and last_event.get("status") == "accepted"
+                else "rejected"
+            )
+            if status != "applied":
+                all_applied = False
+            event = last_event
+
+        health_values = [
+            float(sample["telemetry_health"])
+            for sample in (node.telemetry_history if node else [])
+            if "telemetry_health" in sample
+        ]
+        if health_values:
+            telemetry_samples.extend(health_values)
+            min_health = min(health_values) if min_health is None else min(min_health, min(health_values))
+
+        node_report = {
+            "node_id": node_id,
+            "status": status,
+            "event": event,
+            "telemetry_count": len(health_values),
+            "telemetry_health_min": min(health_values) if health_values else None,
+        }
+        node_reports.append(node_report)
+
+    health_violation = False
+    if telemetry_health_floor is not None and telemetry_samples:
+        health_violation = any(value < telemetry_health_floor for value in telemetry_samples)
+    elif telemetry_health_floor is not None:
+        # No telemetry means canary did not report status.
+        all_applied = False
+
+    return {
+        "run_id": dispatch_report.get("run_id"),
+        "target_nodes": target_nodes,
+        "published": dispatch_report.get("published", 0),
+        "telemetry_health_floor": telemetry_health_floor,
+        "telemetry_samples_total": len(telemetry_samples),
+        "telemetry_health_min": min_health,
+        "all_nodes_applied": all_applied,
+        "telemetry_violation": health_violation,
+        "decision": "rollback" if (not all_applied or health_violation) else "promote",
+        "node_reports": node_reports,
+    }
+
+
+def _coerce_reason(payload: Any) -> str:
+    if isinstance(payload, dict):
+        return str(payload.get("reason", "invalid_ota_payload"))
+    return f"invalid_ota_payload:{type(payload).__name__}"
