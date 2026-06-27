@@ -7,17 +7,16 @@ This document records the real project state after the pivot to **AI-assisted ve
 Current working branch:
 
 ```text
-sprint-4-verification-runner
+sprint-6
 ```
 
-Current branch includes the verification hardening stack through Sprint 5 (adaptive + trace).
+Current branch includes the verification hardening stack through Sprint 7.
 
 Interpretation:
 
-- `main` already contains Sprints 1-3.
-- `cb572ef` briefly documented MQTT as Sprint 4.
-- `14c2de8` pivots the final tree so MQTT is now Sprint 6 and Sprint 4 is the verification runner.
-- The final file tree is aligned with the new strategy, even though branch history contains the earlier MQTT planning commit.
+- `sprint-6` now includes Sprints 1-7.
+- Branch history contains earlier pivot commits (`14c2de8` and later hardening commits).
+- The tree is aligned with the new strategy from a real end-to-end local canary loop.
 
 If a clean PR history matters later, squash or rebase the branch before opening a PR. Do not do that without explicit user approval.
 
@@ -31,7 +30,8 @@ If a clean PR history matters later, squash or rebase the branch before opening 
 | Sprint 4 | Scalable verification runner | Implemented scenario matrix, invariants, risk report, CLI, and tests | Aligned |
 | Sprint 4.5 | Adaptive verification + suggestions | Added bounded adaptive generation, worker pool, suggestion engine, and reporting metadata | Completed |
 | Sprint 5 | Trace/eval records and dashboard | Trace persistence, replay, and eval export are implemented | Completed |
-| Sprint 6 | MQTT edge loop and canary runtime | Docs/spec moved from old Sprint 4, implementation later | Planned |
+| Sprint 6 | MQTT edge loop and canary runtime | Docker-backed transport, dashboard runtime shell, and node agent flow are implemented | Completed |
+| Sprint 7 | Runtime visualization and trace operations | Full web dashboard, trace explorer, dispatch/replay controls, and compatible legacy entrypoint are implemented | Completed |
 
 ## Current Code State
 
@@ -54,6 +54,15 @@ scripts/run_openai_harness.py
 scripts/run_verification_matrix.py
 scripts/replay_trace_case.py
 scripts/export_eval_case.py
+swarmforge/ota.py
+swarmforge/topics.py
+swarmforge/edge_runtime.py
+swarmforge/mqtt_transport.py
+scripts/run_canary_demo.py
+scripts/mqtt_node_agent.py
+scripts/run_sprint6_nodes.py
+scripts/sprint6_web.py
+scripts/sprint7_web.py
 tests/test_harness.py
 tests/test_simulator.py
 tests/test_scenarios.py
@@ -61,8 +70,13 @@ tests/test_verification.py
 tests/test_adaptive_verification.py
 tests/test_setting_suggester.py
 tests/test_verification_adaptive.py
+tests/test_ota.py
+tests/test_edge_runtime.py
+tests/test_run_canary_demo.py
+docker/docker-compose.yml
+docker/mosquitto.conf
 requirements.txt
-```
+``` 
 
 These support:
 
@@ -70,36 +84,20 @@ These support:
 prompt -> OpenAI structured plan -> schema gate -> baseline simulator -> verification matrix -> risk report
 ```
 
-They do not yet support:
+They also support a full local stack in `docker/docker-compose.yml`:
+broker + dashboard + edge-node fleet + optional verification job.
 
-```text
-Live dashboard UI
-MQTT runtime
-```
+- Docker-backed MQTT transport (`swarmforge.mqtt_transport`, `docker/docker-compose.yml`)
+- web dashboard (`scripts/sprint6_web.py`)
+- trace-driven dashboard and replay operations (`scripts/sprint7_web.py`)
+- standalone node agents (`scripts/mqtt_node_agent.py`, `scripts/run_sprint6_nodes.py`)
 
-That gap is expected as Sprint 6 hardening is next.
+Live Docker validation is expected in environments where Docker daemon access is available.
 
 ## Known Workspace Issue
 
-There are untracked files from the earlier MQTT-first path:
-
-```text
-swarmforge/ota.py
-swarmforge/topics.py
-tests/test_ota.py
-```
-
-They are not part of the committed Sprint 4 verification pivot. They can be:
-
-- deleted now if we want a clean Sprint 4 verification branch, or
-- kept untracked and reused later in Sprint 6.
-
-Recommended choice:
-
-```text
-Keep them untracked for now, and promote them intentionally in Sprint 6.
-Do not include them in the Sprint 4 verification commit.
-```
+Current environment cannot execute Docker transport smoke checks (daemon/socket access is unavailable),  
+so live runtime verification is validated by contract/unit tests and documented runbook instead.
 
 ## Current Verification
 
@@ -119,25 +117,24 @@ Trace + replay command:
 
 Important nuance:
 
-- The committed Sprint 1-4 test suite covers harness, simulator, scenarios, and verification behavior.
-- The current workspace also includes untracked Sprint 6 OTA tests, so local test count may include those files until the workspace is cleaned.
+- The committed suite covers harness, simulator, scenarios, verification, trace replay, and canary runtime behavior.
+- Full suite runs in-place with `.venv` dependencies and the in-memory broker path.
 
 ## Gaps To Close Next
 
-Sprint 6 implementation should add:
+Sprint 7+ scope:
 
-- ota payload mapping
-- canary edge dispatch
-- deployment guardrails with real runtime feedback
+- promotion monitor and rollback automation
+- richer dashboard observability and promotion workflows
 
 ## Final Audit Verdict
 
-The committed project direction now matches the hackathon track better than the original OTA-first plan.
+The committed project direction now matches the hackathon track: verifier-first control plane with a bounded local canary runtime.
 
 Status:
 
 ```text
-Sprints 1-5: aligned and implemented.
-Sprint 6: planned and documented.
-Workspace: one untracked MQTT artifact set should be cleaned or intentionally deferred.
+Sprints 1-7: aligned and implemented.
+Sprint 6 still provides transport/runtime baseline.
+Sprint 7 adds visualization, live trace explorer, and dispatch/replay UI.
 ```

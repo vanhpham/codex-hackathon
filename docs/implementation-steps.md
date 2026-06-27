@@ -26,6 +26,7 @@ Sprint 3: OpenAI structured harness
 Sprint 4: Scalable verification runner
 Sprint 5: Trace/eval records and dashboard
 Sprint 6: MQTT edge loop and canary runtime
+Sprint 7: Runtime visualization and trace replay workflow
 ```
 
 Sprint docs:
@@ -38,6 +39,7 @@ docs/sprint-3-openai-harness.md
 docs/sprint-4-verification-runner.md
 docs/sprint-5-trace-dashboard.md
 docs/sprint-6-mqtt-edge-loop.md
+docs/sprint-7-runtime-visualization.md
 ```
 
 ## Strategic Rationale
@@ -259,9 +261,14 @@ Primary outputs:
 - trusted OTA payload mapping
 - MQTT topic helpers
 - one virtual edge agent
+- Docker MQTT stack (`docker/docker-compose.yml`)
+- optional standalone node agents (`scripts/mqtt_node_agent.py`, `scripts/run_sprint6_nodes.py`)
+- web dashboard (`scripts/sprint6_web.py`)
 - targeted node dispatch
 - config-applied and config-rejected events
 - simple canary selection
+- canary evaluation output (`promote`/`rollback`) from telemetry floor checks
+- runnable demo script (`scripts/run_canary_demo.py`)
 
 Key requirements:
 
@@ -278,6 +285,40 @@ One node receives a trusted OTA config.
 Node updates runtime config and emits config_applied.
 Invalid config emits config_rejected.
 No full-fleet deployment exists before canary.
+Promote/rollback recommendation is computed from canary telemetry and apply status.
+```
+
+## Sprint 7: Runtime Visualization and Trace Operations
+
+Goal:
+
+```text
+Make the canary runtime observable and auditable through a local web dashboard.
+```
+
+Primary outputs:
+
+- fleet telemetry and config state view
+- event timeline and node-level health history
+- trace explorer (run list + per-run detail view)
+- dispatch control with canary percentage and trace-backed payload
+- scenario replay API for failed or specific cases
+- compatibility alias command from `scripts/sprint6_web.py` to full dashboard (`scripts/sprint7_web.py`)
+
+Key requirements:
+
+- Keep verification as the source of truth; dashboard only reads and triggers verified payloads.
+- Surface `ready_for_canary` precondition clearly before dispatch.
+- Expose last evaluation metrics: pass rate, telemetry samples, decision, violation flags.
+- Support replaying trace cases for audit and evidence.
+
+Acceptance:
+
+```text
+Fleet state and node telemetry can be viewed live.
+Dispatches show evaluation result and canary decision.
+Traces can be browsed and expanded to scenario summaries.
+Replay endpoint can re-run a recorded scenario deterministically.
 ```
 
 ## Stretch Work
@@ -290,17 +331,15 @@ Add only after the core verification story is strong:
 - generated filter code with AST validator
 - FastAPI API surface
 - WebSocket dashboard
-- Docker Compose
-- Mosquitto MQTT runtime
 - 50-100 virtual nodes
 - Grafana/InfluxDB
 
 ## Current Recommended Next Step
 
-Stop building MQTT-first runtime. Build Sprint 4:
+Next step for Sprint 7:
 
 ```text
-ScenarioSpec -> ScenarioMatrix -> VerificationRunner -> RiskReport
+Canary runtime -> Promotion policy -> Rollback automation -> Dashboard
 ```
 
 This is the pivot that makes SwarmForge fit the engineering-depth track.

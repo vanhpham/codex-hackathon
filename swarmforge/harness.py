@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import uuid
 from dataclasses import asdict, dataclass
+import json
 from typing import Protocol
 
 from swarmforge.openai_contract import OptimizationPlanOutput
@@ -37,6 +38,7 @@ class HarnessResult:
     plan_status: str
     simulation_status: str
     deployment_decision: str
+    raw_plan_json: str | None = None
     plan: dict | None = None
     simulation_result: dict | None = None
     validation_error: str | None = None
@@ -69,6 +71,14 @@ class OpenAIResponsesPlanClient:
 def run_harness(prompt: str, plan_client: PlanClient, run_id: str | None = None) -> HarnessResult:
     run_id = run_id or f"run_{uuid.uuid4().hex[:12]}"
     raw_plan = plan_client.create_plan(prompt)
+    raw_plan_json: str | None = None
+    if isinstance(raw_plan, (dict, list)):
+        try:
+            raw_plan_json = json.dumps(raw_plan, indent=2, sort_keys=True)
+        except TypeError:
+            raw_plan_json = None
+    elif isinstance(raw_plan, str):
+        raw_plan_json = raw_plan
 
     try:
         plan = OptimizationPlan.from_dict(raw_plan)
@@ -80,6 +90,7 @@ def run_harness(prompt: str, plan_client: PlanClient, run_id: str | None = None)
             simulation_status="not_started",
             deployment_decision="blocked",
             plan=raw_plan if isinstance(raw_plan, dict) else None,
+            raw_plan_json=raw_plan_json,
             validation_error=str(exc),
         )
 
@@ -92,6 +103,7 @@ def run_harness(prompt: str, plan_client: PlanClient, run_id: str | None = None)
             simulation_status="rejected",
             deployment_decision="blocked",
             plan=raw_plan,
+            raw_plan_json=raw_plan_json,
             simulation_result=simulation.to_dict(),
         )
 
@@ -102,6 +114,6 @@ def run_harness(prompt: str, plan_client: PlanClient, run_id: str | None = None)
         simulation_status="accepted",
         deployment_decision="ready_for_canary",
         plan=raw_plan,
+        raw_plan_json=raw_plan_json,
         simulation_result=simulation.to_dict(),
     )
-

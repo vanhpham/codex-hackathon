@@ -232,11 +232,13 @@ Implemented:
 - `swarmforge/adaptive_verification.py`: LLM-aware counterexample generation with deterministic fallback.
 - `swarmforge/setting_suggester.py`: suggestion report for safer next plan settings.
 - `swarmforge/traces.py`: trace persistence, replay payload, and eval export.
+- `swarmforge/ota.py`, `swarmforge/topics.py`, `swarmforge/edge_runtime.py`: trusted canary mapping and in-memory edge runtime.
 - `scripts/run_openai_harness.py`: live OpenAI SDK smoke path.
 - `scripts/run_verification_matrix.py`: local verification matrix smoke path with traces.
 - `scripts/replay_trace_case.py`: replay one saved scenario deterministically.
 - `scripts/export_eval_case.py`: export eval-style fixture from a saved trace.
-- unit tests for simulator, harness, scenarios, verification, and trace replay.
+- `scripts/run_canary_demo.py`: execute verification-safe canary run to in-memory nodes.
+- unit tests for simulator, harness, scenarios, verification, trace replay, and canary runtime.
 
 ## Run Commands
 
@@ -262,6 +264,62 @@ Run local verification matrix:
 
 ```bash
 .venv/bin/python scripts/run_verification_matrix.py --scenario-count 50
+```
+
+Run canary demo from a built-in ready payload:
+
+```bash
+.venv/bin/python scripts/run_canary_demo.py
+```
+
+Run canary demo from a saved trace:
+
+```bash
+.venv/bin/python scripts/run_canary_demo.py --trace traces/<run_id>.json --node-count 10
+```
+
+Sprint 6 runtime + Sprint 7 web dashboard (runtime visualization):
+
+```bash
+# start full runtime stack: broker + dashboard + standalone agents (default 8 nodes)
+docker compose -f docker/docker-compose.yml up -d --build
+
+# default dashboard nodes are `node-*`; standalone agents use `edge-*` IDs.
+# open dashboard at http://127.0.0.1:8080
+```
+
+The dashboard reads `.env` through Docker Compose, so `OPENAI_API_KEY` and
+`OPENAI_MODEL` are available to the Operator Console by default. In the UI:
+
+```text
+Engineer prompt -> Generate + Verify -> Deploy Verified Canary
+```
+
+The deploy button still requires a harness-produced
+`verification.decision=ready_for_canary` payload.
+
+If you prefer fully in-memory runtime (no Docker required), switch to:
+
+```bash
+.venv/bin/python scripts/sprint7_web.py --broker-mode in-memory --node-count 5
+```
+
+Backward-compatible command (kept for earlier writeups):
+
+```bash
+.venv/bin/python scripts/sprint6_web.py --broker-mode in-memory --node-count 5
+```
+
+Shut down full stack when done:
+
+```bash
+docker compose -f docker/docker-compose.yml down
+```
+
+Optional: run verification job in compose (one-shot, with trace output to mounted `traces`):
+
+```bash
+SWARM_SCENARIO_COUNT=50 docker compose -f docker/docker-compose.yml --profile tools up -d swarmforge-verification
 ```
 
 Run matrix + trace persistence + suggestion block:
@@ -356,6 +414,7 @@ Sprint 3: OpenAI structured harness
 Sprint 4: Scalable verification runner
 Sprint 5: Trace/eval records and dashboard
 Sprint 6: MQTT edge loop and canary runtime
+Sprint 7: Runtime visualization and trace replay workflows
 ```
 
 MQTT is still valuable, but the hackathon track rewards engineering depth. The verification runner is now the core differentiator.

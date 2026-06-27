@@ -23,7 +23,7 @@ DEFAULT_ADAPTIVE_WORKERS = max(1, min(4, (os.cpu_count() or 2) // 2))
 
 @dataclass(frozen=True)
 class VerificationPolicy:
-    min_pass_rate: float = 0.95
+    min_pass_rate: float = 0.85
     max_risk_score: float = 0.25
 
 

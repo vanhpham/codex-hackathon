@@ -131,6 +131,58 @@ class SettingSuggesterTest(unittest.TestCase):
 
         self.assertIn("no immediate adjustment", suggestions.reason)
 
+    def test_llm_suggestions_are_merged_when_available(self):
+        class FakeLLMClient:
+            def generate_setting_suggestions(self, prompt: str) -> dict[str, object]:
+                del prompt
+                return {
+                    "reason": "Prefer tighter bandwidth profile for throughput.",
+                    "confidence": 0.81,
+                    "options": [
+                        {
+                            "description": "Lower payload cap and increase aggregation under jitter.",
+                            "rationale": "reduce publish pressure and retries.",
+                            "changes": {
+                                "telemetry_collection": {
+                                    "max_payload_kbps": 4.0,
+                                    "aggregation_window_seconds": 10,
+                                },
+                            },
+                            "expected_pass_rate_delta": 0.02,
+                            "expected_risk_score_delta": -0.03,
+                        },
+                    ],
+                }
+
+        suggestions = suggest_setting_adjustments(
+            _example_plan(),
+            _blocked_report(),
+            max_suggestions=6,
+            client=FakeLLMClient(),
+            use_llm=True,
+        )
+
+        self.assertGreaterEqual(len(suggestions.mutually_exclusive_options), 3)
+        self.assertTrue(any(option.get("source") == "llm" for option in suggestions.mutually_exclusive_options))
+        self.assertLessEqual(len(suggestions.mutually_exclusive_options), 6)
+
+    def test_invalid_llm_payload_falls_back(self):
+        class BadLLMClient:
+            def generate_setting_suggestions(self, prompt: str) -> dict[str, object]:
+                del prompt
+                return {"reason": "bad"}
+
+        suggestions = suggest_setting_adjustments(
+            _example_plan(),
+            _blocked_report(),
+            client=BadLLMClient(),
+            use_llm=True,
+        )
+
+        self.assertIsInstance(suggestions, SettingSuggestionReport)
+        self.assertGreater(len(suggestions.mutually_exclusive_options), 0)
+        self.assertTrue("blocked run can improve" in suggestions.reason.lower())
+
 
 if __name__ == "__main__":
     unittest.main()

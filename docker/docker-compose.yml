@@ -1,0 +1,107 @@
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: swarmforge-mosquitto
+    restart: unless-stopped
+    networks:
+      - swarmforge
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_pub -h localhost -p 1883 -t swarmforge/healthcheck -m ok"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  swarmforge-dashboard:
+    container_name: swarmforge-dashboard
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: swarmforge-runtime
+    restart: unless-stopped
+    networks:
+      - swarmforge
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    environment:
+      - SWARM_NODE_COUNT
+      - SWARM_TELEMETRY_INTERVAL
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../traces:/app/traces
+    command: >-
+      sh -c "python scripts/sprint7_web.py
+      --host 0.0.0.0
+      --port 8080
+      --broker-mode mqtt
+      --broker-host mosquitto
+      --broker-port 1883
+      --node-count ${SWARM_NODE_COUNT:-8}
+      --telemetry-interval ${SWARM_TELEMETRY_INTERVAL:-2.0}
+      --trace-dir /app/traces"
+
+  swarmforge-edge-nodes:
+    container_name: swarmforge-edge-nodes
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: swarmforge-runtime
+    restart: unless-stopped
+    networks:
+      - swarmforge
+    depends_on:
+      mosquitto:
+        condition: service_healthy
+    environment:
+      - SWARM_NODE_COUNT
+      - SWARM_HEALTH_CURVE
+      - SWARM_HEALTH_FLOOR
+      - SWARM_TELEMETRY_INTERVAL
+    command: >-
+      sh -c "python scripts/run_sprint6_nodes.py
+      --node-count ${SWARM_NODE_COUNT:-8}
+      --broker-host mosquitto
+      --broker-port 1883
+      --telemetry-interval ${SWARM_TELEMETRY_INTERVAL:-1.5}
+      --node-prefix edge-
+      --health-curve ${SWARM_HEALTH_CURVE:-healthy}
+      --health-floor ${SWARM_HEALTH_FLOOR:-0.85}"
+
+  swarmforge-verification:
+    container_name: swarmforge-verification
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: swarmforge-runtime
+    restart: "no"
+    networks:
+      - swarmforge
+    env_file:
+      - ../.env
+    profiles:
+      - tools
+    environment:
+      - SWARM_SCENARIO_COUNT
+      - SWARM_ADAPTIVE_ROUNDS
+      - SWARM_ADAPTIVE_BUDGET
+      - SWARM_WORKERS
+    command: >-
+      sh -c "python scripts/run_verification_matrix.py
+      --scenario-count ${SWARM_SCENARIO_COUNT:-50}
+      --adaptive
+      --adaptive-rounds ${SWARM_ADAPTIVE_ROUNDS:-1}
+      --adaptive-budget ${SWARM_ADAPTIVE_BUDGET:-20}
+      --workers ${SWARM_WORKERS:-4}
+      --suggest-settings
+      --trace-dir /app/traces"
+
+networks:
+  swarmforge:
+    name: swarmforge-net

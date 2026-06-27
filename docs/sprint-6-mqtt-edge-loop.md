@@ -25,6 +25,13 @@ ready_for_canary RiskReport
 
 Sprint 6 establishes the runtime boundary. It should not bypass Sprint 4 verification.
 
+Sprint 6 now uses a real MQTT path locally:
+
+- Mosquitto via `docker/docker-compose.yml`
+- Runtime transport via Docker CLI (`swarmforge.mqtt_transport`)
+- Dashboard in `scripts/sprint7_web.py` (alias `scripts/sprint6_web.py`)
+- Optional standalone node process in `scripts/mqtt_node_agent.py`
+
 ## Inputs
 
 Sprint 6 consumes only verification-approved results:
@@ -106,7 +113,7 @@ canary_percentage: from plan deployment percentage
 canary_nodes: first N sorted node ids
 ```
 
-The first implementation only needs targeted dispatch. Promotion/rollback automation can be expanded after one-node MQTT is stable.
+The first implementation only needs targeted dispatch. Promotion/rollback automation can be expanded after telemetry feedback is stable.
 
 ## Test Scenarios
 
@@ -126,12 +133,49 @@ Unit tests:
 .venv/bin/python -m unittest
 ```
 
-Live MQTT smoke test:
+Local canary demo:
+
+```bash
+.venv/bin/python scripts/run_canary_demo.py
+```
+
+Canary demo from a saved trace:
+
+```bash
+.venv/bin/python scripts/run_canary_demo.py --trace traces/<run_id>.json --node-count 10
+```
+
+## Sprint 6 Runtime (Docker + Web)
+
+Start full local stack (broker + dashboard + standalone edge-node agents):
+
+```bash
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+The dashboard reads `.env` through Compose. With `OPENAI_API_KEY` present,
+the Operator Console defaults to real OpenAI planning:
 
 ```text
-docker compose up mqtt
-.venv/bin/python edge_node/edge_agent.py --node-id node-01
+engineer prompt -> OpenAI structured plan -> verification matrix -> trace -> canary deploy
 ```
+
+Stop stack:
+
+```bash
+docker compose -f docker/docker-compose.yml down
+```
+
+Override defaults with env:
+
+```bash
+SWARM_NODE_COUNT=12 SWARM_TELEMETRY_INTERVAL=1.0 \
+SWARM_HEALTH_CURVE=steady \
+docker compose -f docker/docker-compose.yml up -d --build
+```
+
+Default dashboard nodes (for UI runtime) still use `node-*` IDs.
+Standalone agents use `edge-*` IDs so they don't collide with dashboard targets.
 
 ## Definition Of Done
 
@@ -143,6 +187,8 @@ Sprint 6 is complete when:
 - MQTT topics are generated consistently.
 - One edge node can apply an OTA config without restart.
 - Tests cover config mapping, dispatch blocking, canary selection, and edge apply logic.
+- Demo output includes canary decision (`promote`/`rollback`) from applied telemetry health.
+- Docker MQTT + web dashboard + node path is runnable end-to-end (with optional standalone node agents).
 
 ## Stretch Handoff
 

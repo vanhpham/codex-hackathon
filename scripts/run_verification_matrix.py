@@ -13,7 +13,10 @@ if str(ROOT) not in sys.path:
 from swarmforge.schemas import OptimizationPlan
 from swarmforge.verification import DEFAULT_ADAPTIVE_WORKERS, run_verification_matrix
 from swarmforge.scenarios import ScenarioSpec, generate_scenario_matrix
-from swarmforge.setting_suggester import suggest_setting_adjustments
+from swarmforge.setting_suggester import (
+    OpenAISettingSuggestionClient,
+    suggest_setting_adjustments,
+)
 from swarmforge.traces import build_verification_trace, make_run_id, save_trace
 
 
@@ -55,6 +58,7 @@ def main() -> None:
     parser.add_argument("--adaptive-rounds", type=int, default=1)
     parser.add_argument("--adaptive-budget", type=int, default=20)
     parser.add_argument("--suggest-settings", action="store_true")
+    parser.add_argument("--llm-suggestions", action="store_true")
     parser.add_argument("--max-suggestions", type=int, default=3)
     parser.add_argument("--trace-dir", default=".swarmforge_traces")
     parser.add_argument("--trace-id", default=None)
@@ -83,10 +87,15 @@ def main() -> None:
     }
 
     if args.suggest_settings:
+        llm_client = (
+            OpenAISettingSuggestionClient() if args.llm_suggestions and args.suggest_settings else None
+        )
         setting_suggestion_report = suggest_setting_adjustments(
             plan=plan,
             report=report,
             max_suggestions=args.max_suggestions,
+            client=llm_client,
+            use_llm=llm_client is not None,
         )
         setting_suggestions = setting_suggestion_report.to_dict()
         payload["setting_suggestions"] = setting_suggestions
