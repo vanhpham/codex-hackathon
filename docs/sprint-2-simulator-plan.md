@@ -1,63 +1,26 @@
-# Sprint 2: Local Simulator and Metric Scoring
+# Sprint 2: Local Simulator And Baseline Metric Scoring
 
-Sprint 2 proves that SwarmForge Harness does not trust a valid-looking LLM plan blindly. A candidate `OptimizationPlan` must be tested against a local synthetic signal and scored before any OTA path is allowed.
+Sprint 2 builds the first deterministic simulator. It proves that a schema-valid plan can still be measured and rejected before deployment.
 
-The Sprint 2 thesis:
-
-```text
-Schema-valid does not mean deployment-safe.
-The simulator must measure impact before canary.
-```
+Sprint 2 is not the final verification story. It is the engine that Sprint 4 will run many times across an adversarial scenario matrix.
 
 ## Sprint Goal
 
-Build a local simulator contract that can answer:
+Build a local simulator that can answer:
 
 - Does the proposed filter reduce accelerometer noise?
-- Does the sample-rate change reduce telemetry bandwidth?
-- Does the telemetry collection config stay within payload limits?
-- Does the filter introduce too much latency?
-- Should the harness accept, reject, or ask for a safer plan?
-
-Sprint 2 should remain local. It does not require OpenAI, MQTT, Docker, edge nodes, or a dashboard.
+- Does the sample-rate change reduce bandwidth?
+- Does telemetry collection stay inside payload limits?
+- Does the filter add too much latency?
+- Should the plan be accepted or rejected for this one baseline scenario?
 
 ## Inputs
 
 ### `OptimizationPlan`
 
-The simulator consumes the approved Sprint 1 object:
+The simulator consumes the typed plan from Sprint 1.
 
-```json
-{
-  "intent": "reduce_noise_and_bandwidth",
-  "target_metric": "accelerometer",
-  "sampling_rate_hz": 2,
-  "log_level": "WARNING",
-  "filter": {
-    "type": "median",
-    "window_size": 5
-  },
-  "telemetry_collection": {
-    "metrics": ["accelerometer", "temperature", "battery"],
-    "aggregation_window_seconds": 5,
-    "publish_mode": "summary_and_anomalies",
-    "max_payload_kbps": 8
-  },
-  "deployment": {
-    "strategy": "canary",
-    "percentage": 5,
-    "observation_window_seconds": 10
-  },
-  "rollback": {
-    "enabled": true,
-    "max_latency_ms": 250,
-    "max_error_rate": 0.02,
-    "min_telemetry_health": 0.95
-  }
-}
-```
-
-### Baseline Fleet Config
+### Baseline Config
 
 ```json
 {
@@ -78,22 +41,20 @@ The simulator consumes the approved Sprint 1 object:
 
 ### Synthetic Signal
 
-The first simulator should generate a deterministic accelerometer stream:
+The simulator generates deterministic accelerometer data:
 
 ```text
 duration_seconds: 30
 baseline_sample_rate_hz: 10
 base_motion: smooth low-frequency wave
-noise: random jitter
+normal_noise: low jitter
 terrain_event: high-vibration window
-seed: fixed for repeatable demos
+seed: fixed for replay
 ```
-
-The deterministic seed matters because judges should see repeatable before/after metrics.
 
 ## Outputs
 
-The simulator returns a `SimulationResult`.
+`SimulationResult`:
 
 ```json
 {
@@ -112,119 +73,60 @@ The simulator returns a `SimulationResult`.
 }
 ```
 
-Rejected example:
-
-```json
-{
-  "accepted": false,
-  "reason": "Median window size 15 reduced noise but exceeded the latency budget.",
-  "noise_score_before": 0.82,
-  "noise_score_after": 0.32,
-  "noise_reduction_ratio": 0.61,
-  "bandwidth_before_kbps": 32.0,
-  "bandwidth_after_kbps": 6.4,
-  "bandwidth_reduction_ratio": 0.8,
-  "latency_penalty_ms": 700,
-  "payload_limit_kbps": 8,
-  "estimated_payload_kbps": 6.4,
-  "score": 0.38
-}
-```
-
 ## Metrics
 
-### Noise Score
-
-Noise score should estimate short-term jitter in the accelerometer stream.
-
-Recommended first implementation:
+Noise score:
 
 ```text
 noise_score = mean(abs(value[i] - value[i - 1]))
 ```
 
-This is simple, explainable, and enough for the demo. Later versions can use variance, spectral energy, or domain-specific vibration features.
-
-### Bandwidth Estimate
-
-Recommended first implementation:
+Bandwidth estimate:
 
 ```text
 payload_per_sample_bytes =
   base_overhead_bytes
-  + bytes_per_metric * number_of_collected_metrics
+  + bytes_per_metric * collected_metric_count
 
 bandwidth_kbps =
-  sampling_rate_hz * payload_per_sample_bytes * 8 / 1000
+  sampling_rate_hz * payload_per_sample_bytes * 8 / 1000 * publish_mode_multiplier
 ```
 
-Suggested constants:
-
-```text
-base_overhead_bytes: 32
-bytes_per_metric: 16
-```
-
-`publish_mode` can apply a multiplier:
-
-```text
-raw: 1.0
-summary: 0.45
-summary_and_anomalies: 0.55
-anomalies_only: 0.25
-```
-
-### Latency Penalty
-
-Recommended first implementation:
+Latency estimate:
 
 ```text
 latency_penalty_ms = ((filter.window_size - 1) / 2) / baseline_sample_rate_hz * 1000
 ```
 
-For `filter.type = none`, latency should be `0`.
-
-### Score
-
-The score should be explainable:
+Score:
 
 ```text
 score =
-  noise_reduction_ratio * 0.45
-  + bandwidth_reduction_ratio * 0.35
-  + latency_budget_remaining * 0.15
-  + payload_budget_remaining * 0.05
+  noise_reduction_ratio * intent_weight
+  + bandwidth_reduction_ratio * intent_weight
+  + latency_budget_remaining * weight
+  + payload_budget_remaining * weight
 ```
 
-The default weights above are for `reduce_noise_and_bandwidth`. Bandwidth-only and noise-only intents may use intent-specific weights so the simulator rewards the metric the operator actually asked to improve.
-
-Where:
-
-```text
-latency_budget_remaining = 1 - min(latency_penalty_ms / rollback.max_latency_ms, 1)
-payload_budget_remaining = 1 - min(estimated_payload_kbps / max_payload_kbps, 1)
-```
-
-Clamp score to `0..1`.
+The current implementation uses intent-aware weights so bandwidth-only requests can pass without needing noise improvement.
 
 ## Acceptance Policy
 
-Accept a plan when all are true:
+Accept when all relevant intent checks pass:
 
-- `noise_score_after` is lower than `noise_score_before` for noise-focused intents.
-- `bandwidth_after_kbps` is lower than `bandwidth_before_kbps` for bandwidth-focused intents.
-- `latency_penalty_ms <= rollback.max_latency_ms`.
-- `estimated_payload_kbps <= telemetry_collection.max_payload_kbps`.
-- `score >= 0.6`.
+- noise-focused plans reduce noise
+- bandwidth-focused plans reduce bandwidth
+- latency stays under rollback budget
+- payload stays under telemetry cap
+- score is above threshold
 
-Reject a plan when any are true:
+Reject when:
 
-- Filter produces invalid values.
-- Latency exceeds the rollback budget.
-- Estimated payload exceeds the plan payload limit.
-- Noise gets worse for a noise-focused request.
-- Bandwidth gets worse for a bandwidth-focused request.
-- Score is below threshold.
+- latency exceeds budget
+- payload exceeds cap
+- noise gets worse for a noise request
+- bandwidth gets worse for a bandwidth request
+- score is too low
 
 ## Test Scenarios
 
@@ -232,47 +134,45 @@ Reject a plan when any are true:
 | --- | --- | --- |
 | Happy path | `2Hz`, `median`, window `5`, summary telemetry | Accepted |
 | Oversized filter | `2Hz`, `median`, window `15` | Rejected for latency |
-| Payload too high | `10Hz`, raw all metrics, payload cap `4kbps` | Rejected for payload |
-| No useful change | `10Hz`, no filter, raw telemetry | Rejected for weak score |
-| Bandwidth only | `2Hz`, no filter, summary telemetry | Accepted if intent is bandwidth-focused |
+| Payload too high | `10Hz`, raw all metrics, payload cap `1kbps` | Rejected for payload |
+| No useful change | `10Hz`, no filter, raw telemetry | Rejected |
+| Bandwidth only | `2Hz`, no filter, summary telemetry | Accepted |
 
-## Sprint 2 Backlog
+## Current Code
 
-| Item | Requirement | Output |
-| --- | --- | --- |
-| Simulator contract | Define input/output shapes | This document |
-| Synthetic signal | Deterministic noisy accelerometer stream | Repeatable sample data |
-| Filter simulation | Apply trusted filter specs only | `none`, `moving_average`, `median`, `low_pass` |
-| Telemetry estimate | Estimate payload and bandwidth | `bandwidth_before/after` |
-| Latency estimate | Estimate filter delay | `latency_penalty_ms` |
-| Scoring | Combine gains and penalties | `score` |
-| Acceptance cases | Verify happy and rejection paths | Scenario outputs |
+Implemented modules:
 
-## Local Test Command
+```text
+swarmforge/schemas.py
+swarmforge/simulator.py
+tests/test_simulator.py
+```
 
-After implementation starts, the local simulator tests should run with:
+Run:
 
 ```text
 .venv/bin/python -m unittest
 ```
 
-## Definition of Done
+## Definition Of Done
 
 Sprint 2 is complete when:
 
-- A deterministic local simulation can run without OpenAI, MQTT, Docker, or edge nodes.
-- The happy-path median filter plan is accepted.
-- Oversized filters are rejected for latency.
-- Excess telemetry payload is rejected.
-- The simulator returns a clear `SimulationResult`.
-- The output can be used by Sprint 3 before any OpenAI API integration.
+- deterministic local simulation runs without OpenAI
+- happy-path median plan is accepted
+- unsafe plans are rejected with reasons
+- output is JSON-serializable
+- tests are fast and local
 
-## Sprint 3 Handoff
+## Sprint 4 Handoff
 
-Sprint 3 should call the OpenAI Responses API to produce `OptimizationPlan`, then immediately pass that plan into:
+Sprint 4 should generalize this simulator:
 
 ```text
-schema validation -> simulator -> deployment decision
+single baseline simulation
+  -> many ScenarioSpec variants
+  -> many SimulationResult records
+  -> aggregate RiskReport
 ```
 
-The simulator remains harness-owned. The model may suggest a plan, but it cannot override simulator rejection.
+The simulator remains harness-owned. The model cannot override simulator failures.

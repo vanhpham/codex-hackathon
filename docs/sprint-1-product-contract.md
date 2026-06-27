@@ -1,62 +1,52 @@
-# Sprint 1: Product Contract and Schema Gate
+# Sprint 1: Product Contract And Typed Control Plan
 
-Sprint 1 defines the product contract for SwarmForge Harness before runtime code is built. The output of this sprint is a clear, judge-friendly harness specification and a schema-first contract that future backend, simulator, MQTT, and dashboard work must follow.
+Sprint 1 defines SwarmForge as an AI-assisted verification control plane, not a chatbot and not a direct deployment tool.
 
-The core promise remains:
+The core promise:
 
 ```text
-Natural-language engineering request
-  -> structured optimization plan
-  -> schema validation
-  -> local simulation
-  -> canary deployment
-  -> telemetry monitoring
-  -> rollback decision
-  -> trace/eval record
+Natural-language engineering intent
+  -> typed operational control plan
+  -> schema and policy gate
+  -> verification before deployment
 ```
 
-The LLM proposes. The harness decides.
+The model proposes. The harness verifies. The harness decides.
 
 ## Sprint Goal
 
-Create the first stable product and data contract for a safe OTA tuning harness.
+Create the first stable product and data contract:
 
-By the end of Sprint 1, the team should be able to answer:
+- what problem the system solves
+- what the LLM may propose
+- what the harness owns
+- which operational knobs are allowed
+- which safety policies are non-negotiable
+- what output shape downstream verification consumes
 
-- What exact problem does the demo solve?
-- What is the first end-to-end scenario?
-- What object is the LLM allowed to produce?
-- What object is the harness responsible for validating?
-- Which plan fields are accepted, bounded, or rejected?
-- What output shape should later phases return to the dashboard and trace store?
+## Track Fit
 
-## Non-Goals
+The hackathon track rewards engineering depth. The Sprint 1 framing must make clear that SwarmForge is not "AI changes config." It is:
 
-Sprint 1 does not include:
+```text
+AI-assisted plan generation + harness-owned verification + auditable safety decisions.
+```
 
-- FastAPI scaffolding.
-- OpenAI API integration.
-- MQTT setup.
-- Edge node containers.
-- Dashboard implementation.
-- Generated Python filters.
-- Docker Compose runtime.
-
-Those belong to later sprints after the schema contract is approved.
+The project should feel like a control-plane compiler and verification lab.
 
 ## Demo Scenario
 
-Baseline swarm state:
+Baseline edge swarm:
 
 ```text
-Domain: off-road racing / harsh terrain edge telemetry
+Domain: off-road racing / harsh terrain telemetry
 Fleet: virtual edge nodes
 Signal: noisy accelerometer stream
 Baseline sample rate: 10 Hz
-Baseline log level: INFO
 Baseline filter: none
-Baseline telemetry collection: accelerometer, temperature, battery, bandwidth
-Problem: high noise, high bandwidth, higher battery drain
+Baseline telemetry mode: raw
+Baseline log level: INFO
+Problem: noisy signal, high bandwidth, higher battery drain
 ```
 
 Engineer request:
@@ -66,56 +56,70 @@ Xe dang vao vung bun lay, rung lac manh. Hay giam sample rate xuong 2Hz,
 them median filter cho gia toc, va chuyen log level sang WARNING.
 ```
 
-Expected harness behavior:
+Expected behavior:
 
 ```text
-1. Convert the request into a structured optimization plan.
-2. Validate the plan against a strict schema and safety policy.
-3. Defer all runtime decisions to the harness, not the model.
-4. Prepare the plan for simulation in Sprint 2.
+1. OpenAI proposes a typed OptimizationPlan.
+2. Harness validates schema and policy.
+3. Harness prepares the plan for verification.
+4. Later sprints stress-test the plan across many scenarios.
 ```
 
-## Product Contract
+## Model Boundary
 
 The LLM may produce:
 
 - intent classification
 - target metric
-- sample rate target
-- filter specification
-- log level
-- telemetry collection configuration
+- operational knob changes
 - deployment strategy request
 - rollback policy request
 - human-readable rationale
 
 The LLM may not:
 
-- deploy directly to nodes
-- call MQTT directly
+- deploy directly
+- publish MQTT messages
 - execute arbitrary code
-- generate Python filter code for MVP
+- generate Python filters for MVP
 - bypass canary
-- request full-fleet deployment as the first action
+- request full rollout as the first action
 - disable rollback
+- override verification results
+
+## Harness Responsibilities
 
 The harness owns:
 
 - schema validation
 - policy validation
-- trusted filter implementation mapping
-- trusted telemetry collection mapping
-- simulation
-- scoring
-- canary selection
-- OTA dispatch
-- health monitoring
-- rollback
+- trusted implementation mapping
+- deterministic simulation
+- adversarial scenario generation
+- safety invariant checks
+- risk scoring
+- canary decision
 - trace/eval persistence
+- rollback enforcement
+
+## Control Knobs
+
+The typed control plan should support more than basic config fields.
+
+| Area | Allowed Knobs |
+| --- | --- |
+| Telemetry | `sampling_rate_hz`, `metrics`, `aggregation_window_seconds`, `publish_mode`, `max_payload_kbps` |
+| Signal processing | `filter.type`, `filter.window_size`, future `low_pass.alpha` |
+| Power | `power_mode`, `duty_cycle`, `sleep_interval_ms` |
+| Network | `batching_window_ms`, `compression`, `retry_policy`, `mqtt_qos` |
+| Logging | `log_level`, `event_sample_rate`, `error_only_mode` |
+| Anomaly detection | `threshold`, `debounce_window`, `alert_severity` |
+| Deployment | `strategy`, `percentage`, `observation_window_seconds`, `rollout_ring` |
+| Rollback | `enabled`, `max_latency_ms`, `max_error_rate`, `min_telemetry_health` |
+
+MVP implementation may start with telemetry, signal processing, deployment, and rollback. The docs should keep the broader control-plane direction visible.
 
 ## OptimizationPlan Draft
-
-This is the canonical object the model should return through Structured Outputs in a later sprint.
 
 ```json
 {
@@ -144,279 +148,41 @@ This is the canonical object the model should return through Structured Outputs 
     "max_error_rate": 0.02,
     "min_telemetry_health": 0.95
   },
-  "rationale": "Reduce noisy accelerometer readings and lower bandwidth while preserving a bounded rollout."
+  "rationale": "Reduce noisy accelerometer readings and bandwidth while preserving a bounded rollout."
 }
 ```
 
-## Approved Sprint 1 Decisions
+## Non-Negotiable Policies
 
-The initial schema direction is approved with these MVP constraints:
-
-- `sampling_rate_hz` range is `1..20`.
-- `filter.type` stays allowlisted as `none`, `moving_average`, `median`, and `low_pass`.
-- First deployment must use `canary`.
-- Rollback must remain enabled.
-- OTA plans may also tune telemetry collection settings through the schema-controlled `telemetry_collection` object.
-
-## Field Requirements
-
-### `intent`
-
-Allowed values:
-
-```text
-reduce_noise
-reduce_bandwidth
-reduce_noise_and_bandwidth
-improve_battery_life
-stabilize_telemetry
-```
-
-Requirement:
-
-- Required.
-- Must map to a measurable simulator goal in Sprint 2.
-
-### `target_metric`
-
-Allowed values:
-
-```text
-accelerometer
-temperature
-battery
-bandwidth
-telemetry_health
-```
-
-Requirement:
-
-- Required.
-- MVP demo should use `accelerometer`.
-
-### `sampling_rate_hz`
-
-Requirement:
-
-- Required.
-- Integer or number.
-- Minimum: `1`.
-- Maximum: `20`.
-- MVP recommended target: `2`.
-
-Reject examples:
-
-```text
-0
-0.1
-50
-"fast"
-```
-
-### `log_level`
-
-Allowed values:
-
-```text
-DEBUG
-INFO
-WARNING
-ERROR
-```
-
-Requirement:
-
-- Required.
-- MVP target should use `WARNING`.
-
-### `filter`
-
-Allowed filter types:
-
-```text
-none
-moving_average
-median
-low_pass
-```
-
-Requirements:
-
-- Required.
-- `filter.type` must be allowlisted.
-- `window_size` is required for `moving_average` and `median`.
-- `window_size` must be odd for `median`.
-- `window_size` minimum: `1`.
-- `window_size` maximum: `15`.
-- `low_pass` may later use `alpha`, but alpha is out of scope for Sprint 1 MVP validation.
-
-Recommended MVP filter:
-
-```json
-{
-  "type": "median",
-  "window_size": 5
-}
-```
-
-### `telemetry_collection`
-
-OTA tuning can update how edge nodes collect and publish telemetry, as long as the request stays inside a schema-controlled configuration object.
-
-Allowed metrics:
-
-```text
-accelerometer
-temperature
-battery
-bandwidth
-telemetry_health
-error_count
-config_version
-```
-
-Allowed publish modes:
-
-```text
-raw
-summary
-summary_and_anomalies
-anomalies_only
-```
-
-Requirements:
-
-- Required for MVP plans.
-- `metrics` must include at least one metric.
-- `accelerometer` should remain included for the first demo scenario.
-- `aggregation_window_seconds` must be between `1` and `60`.
-- `max_payload_kbps` must be between `1` and `64`.
-- `publish_mode` must be allowlisted.
-- The model may request telemetry collection changes, but the backend maps them to trusted node config.
-
-Recommended MVP telemetry collection:
-
-```json
-{
-  "metrics": ["accelerometer", "temperature", "battery"],
-  "aggregation_window_seconds": 5,
-  "publish_mode": "summary_and_anomalies",
-  "max_payload_kbps": 8
-}
-```
-
-Reject examples:
-
-```json
-{
-  "metrics": [],
-  "aggregation_window_seconds": 0,
-  "publish_mode": "custom_script",
-  "max_payload_kbps": 500
-}
-```
-
-### `deployment`
-
-Allowed strategies:
-
-```text
-canary
-shadow
-full_after_canary
-```
-
-Requirements:
-
-- Required.
-- First runtime deployment must be `canary`.
-- First deployment percentage must be between `1` and `20`.
-- MVP recommended percentage: `5`.
-- Observation window should be between `5` and `30` seconds.
-
-Reject examples:
-
-```json
-{
-  "strategy": "full_fleet",
-  "percentage": 100
-}
-```
-
-```json
-{
-  "strategy": "canary",
-  "percentage": 80
-}
-```
-
-### `rollback`
-
-Requirements:
-
-- Required.
-- `enabled` must be `true` for MVP.
-- Must include at least one measurable health threshold.
-- Rollback cannot be disabled by the LLM.
-
-Suggested thresholds:
-
-```text
-max_latency_ms: 50..1000
-max_error_rate: 0..0.2
-min_telemetry_health: 0.8..1.0
-```
+- `sampling_rate_hz` must be `1..20`.
+- `filter.type` must be `none`, `moving_average`, `median`, or `low_pass`.
+- `filter.window_size` must be `1..15`.
+- First deployment must be `canary`.
+- First canary percentage must be `1..20`.
+- Rollback must be enabled.
+- Telemetry payload cap must be bounded.
+- No arbitrary code execution in MVP.
 
 ## Validation Result Contract
 
-The schema gate should return a machine-readable result.
-
-Accepted example:
+Accepted:
 
 ```json
 {
   "accepted": true,
   "stage": "schema_gate",
   "reasons": [],
-  "normalized_plan": {
-    "intent": "reduce_noise_and_bandwidth",
-    "target_metric": "accelerometer",
-    "sampling_rate_hz": 2,
-    "log_level": "WARNING",
-    "filter": {
-      "type": "median",
-      "window_size": 5
-    },
-    "telemetry_collection": {
-      "metrics": ["accelerometer", "temperature", "battery"],
-      "aggregation_window_seconds": 5,
-      "publish_mode": "summary_and_anomalies",
-      "max_payload_kbps": 8
-    },
-    "deployment": {
-      "strategy": "canary",
-      "percentage": 5,
-      "observation_window_seconds": 10
-    },
-    "rollback": {
-      "enabled": true,
-      "max_latency_ms": 250,
-      "max_error_rate": 0.02,
-      "min_telemetry_health": 0.95
-    }
-  }
+  "normalized_plan": {}
 }
 ```
 
-Rejected example:
+Rejected:
 
 ```json
 {
   "accepted": false,
   "stage": "schema_gate",
   "reasons": [
-    "sampling_rate_hz must be between 1 and 20",
-    "telemetry_collection.publish_mode must be allowlisted",
     "first deployment must use canary",
     "rollback.enabled must be true"
   ],
@@ -424,96 +190,23 @@ Rejected example:
 }
 ```
 
-## Harness Run State Draft
-
-Future phases should expose a run state that can drive both the dashboard and trace records.
-
-```json
-{
-  "run_id": "run_001",
-  "status": "schema_validated",
-  "prompt": "Reduce noisy accelerometer telemetry and sample at 2Hz.",
-  "model_plan": {},
-  "schema_result": {},
-  "simulation_result": null,
-  "deployment_decision": "not_started",
-  "canary_result": null,
-  "rollback_result": null,
-  "created_at": "2026-06-27T00:00:00Z"
-}
-```
-
-Allowed run statuses:
-
-```text
-created
-plan_generated
-schema_validated
-schema_rejected
-simulation_running
-simulation_rejected
-ready_for_canary
-canary_running
-canary_failed
-rollback_triggered
-promoted
-completed
-failed
-```
-
-## Sprint 1 Backlog
-
-| Item | Requirement | Output |
-| --- | --- | --- |
-| Product promise | Define the one-sentence demo promise | README/docs language |
-| Demo scenario | Define baseline, operator request, expected safe result | Scenario contract |
-| LLM boundary | List what model may and may not do | Safety contract |
-| Schema draft | Define OptimizationPlan fields and constraints | JSON examples |
-| Telemetry collection | Define OTA-tunable telemetry collection fields | `telemetry_collection` contract |
-| Validation result | Define accepted/rejected output shape | Result contract |
-| Run state | Define future trace/dashboard state shape | HarnessRun draft |
-| Approval checkpoint | Confirm schema before coding | Sprint 1 sign-off |
-
-## Definition of Done
+## Definition Of Done
 
 Sprint 1 is complete when:
 
-- The product contract is written down.
-- The MVP demo scenario is explicit.
-- The LLM boundary is clear.
-- `OptimizationPlan` fields and constraints are agreed.
-- OTA-tunable telemetry collection fields are agreed.
-- Validation accepted/rejected output shapes are agreed.
-- Future simulator and backend work can consume this contract.
-- No runtime implementation has been started without approval.
+- The product is framed as AI-assisted verification control plane.
+- The LLM boundary is explicit.
+- The harness authority is explicit.
+- Operational knobs are documented.
+- Non-negotiable safety policies are documented.
+- Downstream simulator and verification runner have a stable input contract.
 
-## Sprint 2 Handoff
+## Handoff
 
-Sprint 2 should consume this contract and build the local simulator.
+Sprint 2 consumes the typed plan and builds the first local simulator.
 
-Simulator input:
+Sprint 4 later expands the simulator into:
 
 ```text
-OptimizationPlan
-telemetry_collection config
-baseline synthetic accelerometer signal
-baseline fleet config
-```
-
-Simulator output:
-
-```text
-noise_score_before
-noise_score_after
-bandwidth_before_kbps
-bandwidth_after_kbps
-latency_penalty_ms
-accepted
-reason
-```
-
-The key Sprint 2 question:
-
-```text
-Does a schema-valid plan actually improve measured behavior before deployment?
+ScenarioSpec -> ScenarioMatrix -> VerificationRunner -> RiskReport
 ```

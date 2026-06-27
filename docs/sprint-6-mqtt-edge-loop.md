@@ -1,11 +1,13 @@
-# Sprint 4: MQTT Edge Loop and Canary Foundation
+# Sprint 6: MQTT Edge Loop And Canary Runtime
 
-Sprint 4 turns a `ready_for_canary` harness result into a bounded OTA configuration update for virtual edge nodes.
+Sprint 6 turns a verified `ready_for_canary` risk report into a bounded OTA configuration update for virtual edge nodes.
 
-The Sprint 4 thesis:
+MQTT is no longer the first deep engineering milestone. It is the runtime proof after the verification harness has already shown that the plan is safe enough to canary.
+
+The Sprint 6 thesis:
 
 ```text
-Only harness-approved plans become OTA configs.
+Only verification-approved plans become OTA configs.
 The model never publishes MQTT messages directly.
 ```
 
@@ -14,27 +16,26 @@ The model never publishes MQTT messages directly.
 Build the first local edge loop:
 
 ```text
-ready_for_canary HarnessResult
+ready_for_canary RiskReport
   -> trusted OTA config payload
   -> MQTT canary topic
   -> one edge node applies config at runtime
   -> edge node publishes telemetry/events
 ```
 
-Sprint 4 should establish the runtime boundary for deployment. It does not need the final dashboard yet.
+Sprint 6 establishes the runtime boundary. It should not bypass Sprint 4 verification.
 
 ## Inputs
 
-Sprint 4 consumes only accepted Sprint 3 results:
+Sprint 6 consumes only verification-approved results:
 
 ```text
-status: ready_for_canary
-plan_status: valid
-simulation_status: accepted
-deployment_decision: ready_for_canary
+verification_status: passed
+risk_score: below threshold
+decision: ready_for_canary
 ```
 
-Any `schema_rejected` or `simulation_rejected` result must be blocked before MQTT dispatch.
+Any schema rejection, simulator rejection, verification failure, or high-risk report must be blocked before MQTT dispatch.
 
 ## MQTT Topic Contract
 
@@ -54,7 +55,7 @@ Recommended usage:
 
 ## OTA Config Payload
 
-The backend maps `OptimizationPlan` to a trusted runtime config:
+The backend maps the verified `OptimizationPlan` to a trusted runtime config:
 
 ```json
 {
@@ -95,9 +96,9 @@ Each virtual edge node should:
 - publish `config_applied` event on success
 - publish `config_rejected` event on invalid config
 
-## Canary Foundation
+## Canary Runtime
 
-Initial Sprint 4 canary can be simple:
+Initial canary can be simple:
 
 ```text
 fleet_size: configurable
@@ -111,8 +112,8 @@ The first implementation only needs targeted dispatch. Promotion/rollback automa
 
 | Scenario | Input | Expected Result |
 | --- | --- | --- |
-| Ready plan | `ready_for_canary` result | OTA payload created |
-| Rejected plan | `simulation_rejected` result | MQTT dispatch blocked |
+| Ready report | `ready_for_canary` risk report | OTA payload created |
+| Rejected report | high-risk or blocked report | MQTT dispatch blocked |
 | Canary selection | 10 nodes, 5% | one canary node |
 | Topic mapping | `node-01` | `swarm/node/node-01/ota` |
 | Edge apply | valid OTA payload | config updated and event emitted |
@@ -125,28 +126,28 @@ Unit tests:
 .venv/bin/python -m unittest
 ```
 
-Future live MQTT smoke test:
+Live MQTT smoke test:
 
 ```text
 docker compose up mqtt
 .venv/bin/python edge_node/edge_agent.py --node-id node-01
 ```
 
-## Definition of Done
+## Definition Of Done
 
-Sprint 4 is complete when:
+Sprint 6 is complete when:
 
-- A `ready_for_canary` result can be converted to OTA config.
-- Rejected harness results cannot be dispatched.
+- A verification-approved result can be converted to OTA config.
+- Rejected/high-risk reports cannot be dispatched.
 - Canary node selection is deterministic.
 - MQTT topics are generated consistently.
 - One edge node can apply an OTA config without restart.
 - Tests cover config mapping, dispatch blocking, canary selection, and edge apply logic.
 
-## Sprint 5 Handoff
+## Stretch Handoff
 
-Sprint 5 should add dashboard and trace/eval polish:
+After Sprint 6:
 
 ```text
-telemetry/events -> WebSocket/dashboard -> run timeline -> trace/eval records
+multi-node swarm -> promotion monitor -> rollback automation -> dashboard integration
 ```
